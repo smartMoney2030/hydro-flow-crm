@@ -16,8 +16,8 @@ function TasksPage() {
     <>
       <PageHeader eyebrow="Work" title="Tasks" description={`${open.length} open, ${done.length} done`} />
       <Section className="space-y-4">
-        {[["Open", open], ["Completed", done]].map(([label, list]) => (
-          <div key={label as string}>
+        {([["Open", open], ["Completed", done]] as const).map(([label, list]) => (
+          <div key={label}>
             <h2 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{label}</h2>
             <div className="grid gap-2">
               {(list as typeof open).map((t) => {

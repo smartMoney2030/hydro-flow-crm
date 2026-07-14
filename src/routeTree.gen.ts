@@ -9,16 +9,66 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TeamRouteImport } from './routes/team'
+import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as SupplyOrdersRouteImport } from './routes/supply-orders'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SalesPipelineRouteImport } from './routes/sales-pipeline'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as MapRouteImport } from './routes/map'
+import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as LeadsRouteImport } from './routes/leads'
 import { Route as JobsPipelineRouteImport } from './routes/jobs-pipeline'
+import { Route as InstallationsRouteImport } from './routes/installations'
+import { Route as EquipmentRouteImport } from './routes/equipment'
 import { Route as CustomersRouteImport } from './routes/customers'
+import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as AutomationsRouteImport } from './routes/automations'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuditLogsRouteImport } from './routes/audit-logs'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TechnicianIndexRouteImport } from './routes/technician.index'
 import { Route as CustomersIdRouteImport } from './routes/customers.$id'
+import { Route as TechnicianJobIdRouteImport } from './routes/technician.job.$id'
 
+const TeamRoute = TeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksRoute = TasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupplyOrdersRoute = SupplyOrdersRouteImport.update({
+  id: '/supply-orders',
+  path: '/supply-orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SalesPipelineRoute = SalesPipelineRouteImport.update({
   id: '/sales-pipeline',
   path: '/sales-pipeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MapRoute = MapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaintenanceRoute = MaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeadsRoute = LeadsRouteImport.update({
@@ -31,9 +81,39 @@ const JobsPipelineRoute = JobsPipelineRouteImport.update({
   path: '/jobs-pipeline',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InstallationsRoute = InstallationsRouteImport.update({
+  id: '/installations',
+  path: '/installations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EquipmentRoute = EquipmentRouteImport.update({
+  id: '/equipment',
+  path: '/equipment',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CustomersRoute = CustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AutomationsRoute = AutomationsRouteImport.update({
+  id: '/automations',
+  path: '/automations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuditLogsRoute = AuditLogsRouteImport.update({
+  id: '/audit-logs',
+  path: '/audit-logs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -41,79 +121,243 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TechnicianIndexRoute = TechnicianIndexRouteImport.update({
+  id: '/technician/',
+  path: '/technician/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CustomersIdRoute = CustomersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => CustomersRoute,
 } as any)
+const TechnicianJobIdRoute = TechnicianJobIdRouteImport.update({
+  id: '/technician/job/$id',
+  path: '/technician/job/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/audit-logs': typeof AuditLogsRoute
+  '/auth': typeof AuthRoute
+  '/automations': typeof AutomationsRoute
+  '/calendar': typeof CalendarRoute
   '/customers': typeof CustomersRouteWithChildren
+  '/equipment': typeof EquipmentRoute
+  '/installations': typeof InstallationsRoute
   '/jobs-pipeline': typeof JobsPipelineRoute
   '/leads': typeof LeadsRoute
+  '/maintenance': typeof MaintenanceRoute
+  '/map': typeof MapRoute
+  '/reports': typeof ReportsRoute
   '/sales-pipeline': typeof SalesPipelineRoute
+  '/settings': typeof SettingsRoute
+  '/supply-orders': typeof SupplyOrdersRoute
+  '/tasks': typeof TasksRoute
+  '/team': typeof TeamRoute
   '/customers/$id': typeof CustomersIdRoute
+  '/technician/': typeof TechnicianIndexRoute
+  '/technician/job/$id': typeof TechnicianJobIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audit-logs': typeof AuditLogsRoute
+  '/auth': typeof AuthRoute
+  '/automations': typeof AutomationsRoute
+  '/calendar': typeof CalendarRoute
   '/customers': typeof CustomersRouteWithChildren
+  '/equipment': typeof EquipmentRoute
+  '/installations': typeof InstallationsRoute
   '/jobs-pipeline': typeof JobsPipelineRoute
   '/leads': typeof LeadsRoute
+  '/maintenance': typeof MaintenanceRoute
+  '/map': typeof MapRoute
+  '/reports': typeof ReportsRoute
   '/sales-pipeline': typeof SalesPipelineRoute
+  '/settings': typeof SettingsRoute
+  '/supply-orders': typeof SupplyOrdersRoute
+  '/tasks': typeof TasksRoute
+  '/team': typeof TeamRoute
   '/customers/$id': typeof CustomersIdRoute
+  '/technician': typeof TechnicianIndexRoute
+  '/technician/job/$id': typeof TechnicianJobIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/audit-logs': typeof AuditLogsRoute
+  '/auth': typeof AuthRoute
+  '/automations': typeof AutomationsRoute
+  '/calendar': typeof CalendarRoute
   '/customers': typeof CustomersRouteWithChildren
+  '/equipment': typeof EquipmentRoute
+  '/installations': typeof InstallationsRoute
   '/jobs-pipeline': typeof JobsPipelineRoute
   '/leads': typeof LeadsRoute
+  '/maintenance': typeof MaintenanceRoute
+  '/map': typeof MapRoute
+  '/reports': typeof ReportsRoute
   '/sales-pipeline': typeof SalesPipelineRoute
+  '/settings': typeof SettingsRoute
+  '/supply-orders': typeof SupplyOrdersRoute
+  '/tasks': typeof TasksRoute
+  '/team': typeof TeamRoute
   '/customers/$id': typeof CustomersIdRoute
+  '/technician/': typeof TechnicianIndexRoute
+  '/technician/job/$id': typeof TechnicianJobIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/audit-logs'
+    | '/auth'
+    | '/automations'
+    | '/calendar'
     | '/customers'
+    | '/equipment'
+    | '/installations'
     | '/jobs-pipeline'
     | '/leads'
+    | '/maintenance'
+    | '/map'
+    | '/reports'
     | '/sales-pipeline'
+    | '/settings'
+    | '/supply-orders'
+    | '/tasks'
+    | '/team'
     | '/customers/$id'
+    | '/technician/'
+    | '/technician/job/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/audit-logs'
+    | '/auth'
+    | '/automations'
+    | '/calendar'
     | '/customers'
+    | '/equipment'
+    | '/installations'
     | '/jobs-pipeline'
     | '/leads'
+    | '/maintenance'
+    | '/map'
+    | '/reports'
     | '/sales-pipeline'
+    | '/settings'
+    | '/supply-orders'
+    | '/tasks'
+    | '/team'
     | '/customers/$id'
+    | '/technician'
+    | '/technician/job/$id'
   id:
     | '__root__'
     | '/'
+    | '/audit-logs'
+    | '/auth'
+    | '/automations'
+    | '/calendar'
     | '/customers'
+    | '/equipment'
+    | '/installations'
     | '/jobs-pipeline'
     | '/leads'
+    | '/maintenance'
+    | '/map'
+    | '/reports'
     | '/sales-pipeline'
+    | '/settings'
+    | '/supply-orders'
+    | '/tasks'
+    | '/team'
     | '/customers/$id'
+    | '/technician/'
+    | '/technician/job/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditLogsRoute: typeof AuditLogsRoute
+  AuthRoute: typeof AuthRoute
+  AutomationsRoute: typeof AutomationsRoute
+  CalendarRoute: typeof CalendarRoute
   CustomersRoute: typeof CustomersRouteWithChildren
+  EquipmentRoute: typeof EquipmentRoute
+  InstallationsRoute: typeof InstallationsRoute
   JobsPipelineRoute: typeof JobsPipelineRoute
   LeadsRoute: typeof LeadsRoute
+  MaintenanceRoute: typeof MaintenanceRoute
+  MapRoute: typeof MapRoute
+  ReportsRoute: typeof ReportsRoute
   SalesPipelineRoute: typeof SalesPipelineRoute
+  SettingsRoute: typeof SettingsRoute
+  SupplyOrdersRoute: typeof SupplyOrdersRoute
+  TasksRoute: typeof TasksRoute
+  TeamRoute: typeof TeamRoute
+  TechnicianIndexRoute: typeof TechnicianIndexRoute
+  TechnicianJobIdRoute: typeof TechnicianJobIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/team': {
+      id: '/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof TeamRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks': {
+      id: '/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/supply-orders': {
+      id: '/supply-orders'
+      path: '/supply-orders'
+      fullPath: '/supply-orders'
+      preLoaderRoute: typeof SupplyOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sales-pipeline': {
       id: '/sales-pipeline'
       path: '/sales-pipeline'
       fullPath: '/sales-pipeline'
       preLoaderRoute: typeof SalesPipelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maintenance': {
+      id: '/maintenance'
+      path: '/maintenance'
+      fullPath: '/maintenance'
+      preLoaderRoute: typeof MaintenanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/leads': {
@@ -130,11 +374,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JobsPipelineRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/installations': {
+      id: '/installations'
+      path: '/installations'
+      fullPath: '/installations'
+      preLoaderRoute: typeof InstallationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/equipment': {
+      id: '/equipment'
+      path: '/equipment'
+      fullPath: '/equipment'
+      preLoaderRoute: typeof EquipmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/customers': {
       id: '/customers'
       path: '/customers'
       fullPath: '/customers'
       preLoaderRoute: typeof CustomersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/automations': {
+      id: '/automations'
+      path: '/automations'
+      fullPath: '/automations'
+      preLoaderRoute: typeof AutomationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/audit-logs': {
+      id: '/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/audit-logs'
+      preLoaderRoute: typeof AuditLogsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -144,12 +430,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/technician/': {
+      id: '/technician/'
+      path: '/technician'
+      fullPath: '/technician/'
+      preLoaderRoute: typeof TechnicianIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/customers/$id': {
       id: '/customers/$id'
       path: '/$id'
       fullPath: '/customers/$id'
       preLoaderRoute: typeof CustomersIdRouteImport
       parentRoute: typeof CustomersRoute
+    }
+    '/technician/job/$id': {
+      id: '/technician/job/$id'
+      path: '/technician/job/$id'
+      fullPath: '/technician/job/$id'
+      preLoaderRoute: typeof TechnicianJobIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -168,10 +468,25 @@ const CustomersRouteWithChildren = CustomersRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditLogsRoute: AuditLogsRoute,
+  AuthRoute: AuthRoute,
+  AutomationsRoute: AutomationsRoute,
+  CalendarRoute: CalendarRoute,
   CustomersRoute: CustomersRouteWithChildren,
+  EquipmentRoute: EquipmentRoute,
+  InstallationsRoute: InstallationsRoute,
   JobsPipelineRoute: JobsPipelineRoute,
   LeadsRoute: LeadsRoute,
+  MaintenanceRoute: MaintenanceRoute,
+  MapRoute: MapRoute,
+  ReportsRoute: ReportsRoute,
   SalesPipelineRoute: SalesPipelineRoute,
+  SettingsRoute: SettingsRoute,
+  SupplyOrdersRoute: SupplyOrdersRoute,
+  TasksRoute: TasksRoute,
+  TeamRoute: TeamRoute,
+  TechnicianIndexRoute: TechnicianIndexRoute,
+  TechnicianJobIdRoute: TechnicianJobIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
