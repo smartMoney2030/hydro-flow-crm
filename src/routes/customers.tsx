@@ -17,7 +17,17 @@ function Customers() {
 
   return (
     <>
-      <PageHeader eyebrow="Directory" title="Customers" description={`${customers.length} customers`} actions={<Button className="bg-primary">+ Add customer</Button>} />
+      <PageHeader
+        eyebrow="Directory"
+        title="Customers"
+        description={`${customers.length} customers`}
+        actions={
+          <>
+            <Link to="/import-customers"><Button variant="outline">Import existing</Button></Link>
+            <Button className="bg-primary">+ Add customer</Button>
+          </>
+        }
+      />
       <Section className="space-y-4">
         <Input placeholder="Search by name, email, phone, address..." value={q} onChange={(e) => setQ(e.target.value)} className="max-w-md" />
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
