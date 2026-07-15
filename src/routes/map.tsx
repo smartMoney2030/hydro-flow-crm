@@ -2,25 +2,58 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader, Section } from "@/components/common/PageHeader";
 import { useCRM } from "@/store/crm";
 import { Card, CardContent } from "@/components/ui/card";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Droplet } from "lucide-react";
 
 export const Route = createFileRoute("/map")({ component: MapPage });
 
-// San Antonio bbox
-const B = { latMin: 29.35, latMax: 29.65, lngMin: -98.72, lngMax: -98.35 };
+const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
+const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
 
-function project(lat: number, lng: number, w: number, h: number) {
-  const x = ((lng - B.lngMin) / (B.lngMax - B.lngMin)) * w;
-  const y = h - ((lat - B.latMin) / (B.latMax - B.latMin)) * h;
-  return { x, y };
+declare global {
+  interface Window {
+    google?: any;
+    __initMWPMap?: () => void;
+    __mwpMapReady?: boolean;
+  }
+}
+
+function loadGoogleMaps(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (window.__mwpMapReady && window.google?.maps) return Promise.resolve();
+  if (!BROWSER_KEY) return Promise.reject(new Error("Missing Google Maps browser key"));
+
+  return new Promise((resolve, reject) => {
+    const existing = document.getElementById("google-maps-js") as HTMLScriptElement | null;
+    window.__initMWPMap = () => {
+      window.__mwpMapReady = true;
+      resolve();
+    };
+    if (existing) {
+      if (window.google?.maps) resolve();
+      return;
+    }
+    const s = document.createElement("script");
+    s.id = "google-maps-js";
+    const params = new URLSearchParams({ key: BROWSER_KEY, loading: "async", callback: "__initMWPMap", libraries: "marker" });
+    if (TRACKING_ID) params.set("channel", TRACKING_ID);
+    s.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
+    s.async = true;
+    s.onerror = () => reject(new Error("Failed to load Google Maps"));
+    document.head.appendChild(s);
+  });
 }
 
 function MapPage() {
   const s = useCRM();
   const [filter, setFilter] = useState<"all" | "unscheduled" | "maintenance-due">("all");
   const [selected, setSelected] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+  const mapDivRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
 
   const shown = useMemo(() => {
     return s.customers.filter((c) => {
@@ -37,9 +70,57 @@ function MapPage() {
 
   const sel = selected ? s.customers.find((c) => c.id === selected) : null;
 
+  useEffect(() => {
+    let cancelled = false;
+    loadGoogleMaps()
+      .then(() => {
+        if (cancelled || !mapDivRef.current || !window.google?.maps) return;
+        mapRef.current = new window.google.maps.Map(mapDivRef.current, {
+          center: { lat: 29.4241, lng: -98.4936 },
+          zoom: 10,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+        });
+        setReady(true);
+      })
+      .catch((e) => setError(e.message ?? String(e)));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!ready || !mapRef.current || !window.google?.maps) return;
+    markersRef.current.forEach((m) => m.setMap(null));
+    markersRef.current = [];
+    const bounds = new window.google.maps.LatLngBounds();
+    shown.forEach((c) => {
+      const overdue = s.maintenance.some((m) => m.customerId === c.id && m.status === "Maintenance Overdue");
+      const color = overdue ? "#dc2626" : "#0891b2";
+      const marker = new window.google.maps.Marker({
+        position: { lat: c.lat, lng: c.lng },
+        map: mapRef.current,
+        title: `${c.firstName} ${c.lastName}`,
+        icon: {
+          path: window.google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: color,
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 2,
+        },
+      });
+      marker.addListener("click", () => setSelected(c.id));
+      markersRef.current.push(marker);
+      bounds.extend({ lat: c.lat, lng: c.lng });
+    });
+    if (shown.length > 1) mapRef.current.fitBounds(bounds, 40);
+  }, [ready, shown, s.maintenance]);
+
   return (
     <>
-      <PageHeader eyebrow="Field" title="Map" description="San Antonio service area · demo visualization (Mapbox/Google-ready)." />
+      <PageHeader eyebrow="Field" title="Map" description="San Antonio service area · powered by Google Maps." />
       <Section className="space-y-3">
         <div className="flex flex-wrap gap-2">
           {(["all", "unscheduled", "maintenance-due"] as const).map((f) => (
@@ -53,30 +134,18 @@ function MapPage() {
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
           <Card className="overflow-hidden">
             <CardContent className="p-0">
-              <div className="relative aspect-[4/3] bg-gradient-to-br from-[#e0f2fe] via-[#bae6fd] to-[#7dd3fc]">
-                <svg viewBox="0 0 800 600" className="absolute inset-0 w-full h-full">
-                  {/* Highway grid decoration */}
-                  <g stroke="#0369a1" strokeOpacity="0.15" strokeWidth="1">
-                    {Array.from({ length: 10 }, (_, i) => <line key={`h${i}`} x1="0" y1={i * 60} x2="800" y2={i * 60} />)}
-                    {Array.from({ length: 14 }, (_, i) => <line key={`v${i}`} x1={i * 60} y1="0" x2={i * 60} y2="600" />)}
-                  </g>
-                  {/* River */}
-                  <path d="M 100 500 Q 300 300, 500 350 T 800 200" fill="none" stroke="#0891b2" strokeOpacity="0.4" strokeWidth="6" />
-                  <text x="20" y="30" fontSize="14" fill="#0c4a6e" fontWeight="600">San Antonio</text>
-
-                  {shown.map((c) => {
-                    const { x, y } = project(c.lat, c.lng, 800, 600);
-                    const isSel = c.id === selected;
-                    const overdue = s.maintenance.some((m) => m.customerId === c.id && m.status === "Maintenance Overdue");
-                    const color = overdue ? "#dc2626" : "#0891b2";
-                    return (
-                      <g key={c.id} className="cursor-pointer" onClick={() => setSelected(c.id)}>
-                        <circle cx={x} cy={y} r={isSel ? 10 : 6} fill={color} stroke="white" strokeWidth="2" />
-                        {isSel && <circle cx={x} cy={y} r="16" fill={color} fillOpacity="0.25" />}
-                      </g>
-                    );
-                  })}
-                </svg>
+              <div className="relative aspect-[4/3] bg-muted">
+                <div ref={mapDivRef} className="absolute inset-0 w-full h-full" />
+                {error && (
+                  <div className="absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-destructive">
+                    {error}
+                  </div>
+                )}
+                {!ready && !error && (
+                  <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
+                    Loading map…
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
