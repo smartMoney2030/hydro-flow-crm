@@ -39,7 +39,7 @@ function Customers() {
                     {initials(`${c.firstName} ${c.lastName}`)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium truncate">{c.firstName} {c.lastName}</div>
+                    <div className="font-medium truncate flex items-center gap-1.5">{c.firstName} {c.lastName}{c.isHistorical && <HistoricalBadge />}</div>
                     <div className="text-xs text-muted-foreground truncate">{c.email}</div>
                     <div className="text-xs text-muted-foreground truncate">{c.phone}</div>
                     <div className="text-[11px] text-muted-foreground truncate mt-1">{c.propertyAddress}</div>
