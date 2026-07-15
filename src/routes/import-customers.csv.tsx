@@ -282,22 +282,52 @@ function CsvWizard() {
           </Card>
         )}
 
-        {step === 3 && (
+        {step === 3 && (() => {
+          const junkRe = /^\s*(?:[^A-Za-z]|1st\b|2nd\b|3rd\b|4th\b|test\b|info\b)/i;
+          const isJunk = (p: PreviewRow) => {
+            const name = `${p.input.firstName || ""} ${p.input.lastName || ""}`.trim();
+            return !!name && junkRe.test(name);
+          };
+          const junkIdx = previews.map((p, i) => (isJunk(p) ? i : -1)).filter((i) => i >= 0);
+          const junkCount = junkIdx.length;
+          const skipJunk = () =>
+            setPreviews((ps) => ps.map((p, i) => (junkIdx.includes(i) ? { ...p, resolution: "skip" as Resolution } : p)));
+          const restoreJunk = () =>
+            setPreviews((ps) =>
+              ps.map((p, i) =>
+                junkIdx.includes(i) && !p.missing.length
+                  ? { ...p, resolution: (p.duplicateId ? "skip" : "create") as Resolution }
+                  : p
+              )
+            );
+          return (
           <Card>
             <CardContent className="p-6 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="text-sm">
-                  <span className="font-medium">{previews.length}</span> rows · {previews.filter((p) => !p.missing.length && !p.duplicateId).length} valid · {dupeCount} duplicate · {previews.filter((p) => p.missing.length).length} with missing data
+                  <span className="font-medium">{previews.length}</span> rows · {previews.filter((p) => !p.missing.length && !p.duplicateId).length} valid · {dupeCount} duplicate · {previews.filter((p) => p.missing.length).length} with missing data{junkCount > 0 ? <> · <span className="text-warning-foreground">{junkCount} junk names</span></> : null}
                 </div>
-                {dupeCount > 0 && (
-                  <div className="flex gap-2 text-xs">
-                    <span className="text-muted-foreground self-center">Duplicates:</span>
-                    <Button size="sm" variant="outline" onClick={() => bulkResolve("skip")}>Skip all</Button>
-                    <Button size="sm" variant="outline" onClick={() => bulkResolve("update")}>Update all</Button>
-                    <Button size="sm" variant="outline" onClick={() => bulkResolve("create")}>Create all</Button>
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {junkCount > 0 && (
+                    <>
+                      <span className="text-muted-foreground self-center">Junk names ({junkCount}):</span>
+                      <Button size="sm" variant="outline" onClick={skipJunk}>Skip all</Button>
+                      <Button size="sm" variant="outline" onClick={restoreJunk}>Restore</Button>
+                    </>
+                  )}
+                  {dupeCount > 0 && (
+                    <>
+                      <span className="text-muted-foreground self-center ml-2">Duplicates:</span>
+                      <Button size="sm" variant="outline" onClick={() => bulkResolve("skip")}>Skip all</Button>
+                      <Button size="sm" variant="outline" onClick={() => bulkResolve("update")}>Update all</Button>
+                      <Button size="sm" variant="outline" onClick={() => bulkResolve("create")}>Create all</Button>
+                    </>
+                  )}
+                </div>
               </div>
+              <p className="text-xs text-muted-foreground">
+                "Junk names" are contacts whose name starts with punctuation, a digit, or prefixes like "1st", "2nd", "test", "info" — common Google Contacts placeholders that aren't real people.
+              </p>
               <div className="border rounded overflow-x-auto max-h-[520px]">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 text-xs sticky top-0">
@@ -311,9 +341,14 @@ function CsvWizard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {previews.map((p, i) => (
+                    {previews.map((p, i) => {
+                      const junk = isJunk(p);
+                      return (
                       <tr key={i} className="border-t align-top">
-                        <td className="p-2">{p.input.firstName} {p.input.lastName}</td>
+                        <td className="p-2">
+                          {p.input.firstName} {p.input.lastName}
+                          {junk && <Badge variant="outline" className="ml-2 text-[10px] border-warning/40 text-warning-foreground">junk?</Badge>}
+                        </td>
                         <td className="p-2 text-xs text-muted-foreground">{p.input.phone}<br />{p.input.email}</td>
                         <td className="p-2 text-xs">{p.input.propertyAddress}</td>
                         <td className="p-2 text-xs">{p.input.stage}</td>
@@ -337,7 +372,8 @@ function CsvWizard() {
                           </Select>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -347,7 +383,9 @@ function CsvWizard() {
               </div>
             </CardContent>
           </Card>
-        )}
+          );
+        })()}
+
 
         {step === 4 && report && (
           <Card>
