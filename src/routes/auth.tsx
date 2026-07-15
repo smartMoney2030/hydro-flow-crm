@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Droplet, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
+import logoAsset from "@/assets/my-water-people-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({ component: AuthPage });
 
@@ -17,7 +18,9 @@ function AuthPage() {
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 30% 20%, white 0%, transparent 40%), radial-gradient(circle at 80% 70%, white 0%, transparent 40%)" }} />
         <div className="relative">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl grid place-items-center bg-white/20"><Droplet className="h-5 w-5" /></div>
+            <div className="h-12 w-12 rounded-xl grid place-items-center bg-white overflow-hidden">
+              <img src={logoAsset.url} alt="My Water People" className="h-11 w-11 object-contain" />
+            </div>
             <div className="font-semibold text-lg">My Water People CRM</div>
           </div>
         </div>

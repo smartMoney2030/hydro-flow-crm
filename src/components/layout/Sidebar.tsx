@@ -3,6 +3,7 @@ import * as Icons from "lucide-react";
 import { NAV, canSee } from "@/lib/nav";
 import { useCRM } from "@/store/crm";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/my-water-people-logo.png.asset.json";
 
 export function Sidebar() {
   const role = useCRM((s) => s.role);
@@ -10,9 +11,9 @@ export function Sidebar() {
 
   return (
     <aside className="hidden lg:flex fixed inset-y-0 left-0 w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
-      <div className="px-5 py-5 flex items-center gap-2.5">
-        <div className="h-9 w-9 rounded-xl grid place-items-center bg-gradient-water shadow-wave">
-          <Icons.Droplet className="h-5 w-5 text-white" />
+      <div className="px-5 py-5 flex items-center gap-3">
+        <div className="h-11 w-11 rounded-xl grid place-items-center bg-white/95 shadow-wave overflow-hidden shrink-0">
+          <img src={logoAsset.url} alt="My Water People" className="h-10 w-10 object-contain" />
         </div>
         <div>
           <div className="font-semibold tracking-tight">My Water People</div>
