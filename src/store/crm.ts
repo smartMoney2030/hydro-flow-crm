@@ -132,7 +132,7 @@ export const useCRM = create<CRMState>((set, get) => ({
   role: "admin",
   users: seedUsers,
   customers: seedCustomers,
-  leads: seedLeads,
+  leads: [],
   jobs: seedJobs,
   supplyOrders: seedSupply,
   installations: seedInstalls,
