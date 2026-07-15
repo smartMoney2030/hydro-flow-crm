@@ -55,6 +55,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Sales, installation, and maintenance CRM for water-treatment businesses." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "My Water People CRM" },
+      { name: "twitter:description", content: "Sales, installation, and maintenance CRM for water-treatment businesses." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0aedd3eb-ee93-4dcc-aa52-2d6220ac92bd/id-preview-fd6edf8a--9c6e1225-243d-4932-a9dc-ebd219bc02b6.lovable.app-1784087134014.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0aedd3eb-ee93-4dcc-aa52-2d6220ac92bd/id-preview-fd6edf8a--9c6e1225-243d-4932-a9dc-ebd219bc02b6.lovable.app-1784087134014.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
