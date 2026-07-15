@@ -57,6 +57,7 @@ interface CRMState {
   audit: AuditLog[];
   automationRules: AutomationRule[];
   automationRuns: AutomationRun[];
+  importBatches: ImportBatch[];
 
   setRole: (r: Role) => void;
   setLeadStatus: (id: string, s: LeadStatus) => void;
@@ -70,10 +71,61 @@ interface CRMState {
   reassignEvent: (id: string, techId: string) => void;
   addAudit: (a: Omit<AuditLog, "id" | "at">) => void;
   addAutomationRun: (r: Omit<AutomationRun, "id" | "at">) => void;
+
+  findDuplicateCustomers: (candidate: Partial<Customer>) => DuplicateMatch[];
+  addExistingCustomer: (input: ExistingCustomerInput, opts?: { batchId?: string; createLead?: boolean }) => { customer: Customer; equipmentIds: string[]; maintenanceIds: string[]; eventIds: string[] };
+  updateCustomer: (id: string, patch: Partial<Customer>) => void;
+  commitImportBatch: (batch: Omit<ImportBatch, "id" | "createdAt" | "actorId">) => ImportBatch;
+  reverseImportBatch: (id: string) => boolean;
 }
+
+export interface ExistingCustomerEquipment {
+  type: string;
+  model: string;
+  serial: string;
+  warrantyExpires?: string;
+}
+
+export interface ExistingCustomerInput {
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  email?: string;
+  billingAddress?: string;
+  propertyAddress: string;
+  preferredContact?: "phone" | "email" | "text";
+  notes?: string;
+  leadSource?: string;
+  stage: CustomerStage;
+  originalSaleDate?: string;
+  originalInstallDate?: string;
+  purchasePrice?: number;
+  paymentStatus?: PaymentStatus;
+  assignedSalespersonId?: string;
+  assignedTechnicianId?: string;
+  enrolledInMaintenance?: boolean;
+  lastMaintenance?: string;
+  nextMaintenance?: string;
+  previousServiceHistory?: string;
+  equipment?: ExistingCustomerEquipment[];
+  photos?: { name: string; dataUrl: string }[];
+  documents?: { name: string; dataUrl: string }[];
+}
+
+const stageToMaintStatus: Record<CustomerStage, MaintenanceStatus | null> = {
+  "Existing Customer": null,
+  "Installation Pending": null,
+  "Installation Completed": "Active Maintenance Customer",
+  "Active Maintenance Customer": "Active Maintenance Customer",
+  "Maintenance Due": "Due Within 30 Days",
+  "Maintenance Overdue": "Maintenance Overdue",
+  "Inactive Customer": "Maintenance Paused",
+};
 
 const userForRole = (role: Role, users: User[]) =>
   users.find((u) => u.role === role)?.id || users[0].id;
+
+const uid = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 export const useCRM = create<CRMState>((set, get) => ({
   currentUserId: "u1",
