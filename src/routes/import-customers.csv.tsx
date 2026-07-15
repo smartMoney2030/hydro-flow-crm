@@ -491,6 +491,7 @@ function CsvWizard() {
               <div className="text-sm text-muted-foreground">
                 Imported customers are tagged as <em>Historical data</em>. Property addresses were geocoded and pinned on the map; future installations and maintenance were added to the calendar.
               </div>
+              <ErrorList errors={errors} />
               <div className="flex flex-wrap gap-2">
                 <Link to="/customers"><Button variant="outline">View customers</Button></Link>
                 <Link to="/map"><Button variant="outline">Open map</Button></Link>
@@ -511,6 +512,7 @@ function CsvWizard() {
             </CardContent>
           </Card>
         )}
+
       </Section>
     </>
   );
