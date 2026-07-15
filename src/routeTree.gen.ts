@@ -20,6 +20,7 @@ import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as LeadsRouteImport } from './routes/leads'
 import { Route as JobsPipelineRouteImport } from './routes/jobs-pipeline'
 import { Route as InstallationsRouteImport } from './routes/installations'
+import { Route as ImportCustomersRouteImport } from './routes/import-customers'
 import { Route as EquipmentRouteImport } from './routes/equipment'
 import { Route as CustomersRouteImport } from './routes/customers'
 import { Route as CalendarRouteImport } from './routes/calendar'
@@ -28,6 +29,8 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuditLogsRouteImport } from './routes/audit-logs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TechnicianIndexRouteImport } from './routes/technician.index'
+import { Route as ImportCustomersManualRouteImport } from './routes/import-customers.manual'
+import { Route as ImportCustomersCsvRouteImport } from './routes/import-customers.csv'
 import { Route as CustomersIdRouteImport } from './routes/customers.$id'
 import { Route as TechnicianJobIdRouteImport } from './routes/technician.job.$id'
 
@@ -86,6 +89,11 @@ const InstallationsRoute = InstallationsRouteImport.update({
   path: '/installations',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ImportCustomersRoute = ImportCustomersRouteImport.update({
+  id: '/import-customers',
+  path: '/import-customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EquipmentRoute = EquipmentRouteImport.update({
   id: '/equipment',
   path: '/equipment',
@@ -126,6 +134,16 @@ const TechnicianIndexRoute = TechnicianIndexRouteImport.update({
   path: '/technician/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ImportCustomersManualRoute = ImportCustomersManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
+  getParentRoute: () => ImportCustomersRoute,
+} as any)
+const ImportCustomersCsvRoute = ImportCustomersCsvRouteImport.update({
+  id: '/csv',
+  path: '/csv',
+  getParentRoute: () => ImportCustomersRoute,
+} as any)
 const CustomersIdRoute = CustomersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -145,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/customers': typeof CustomersRouteWithChildren
   '/equipment': typeof EquipmentRoute
+  '/import-customers': typeof ImportCustomersRouteWithChildren
   '/installations': typeof InstallationsRoute
   '/jobs-pipeline': typeof JobsPipelineRoute
   '/leads': typeof LeadsRoute
@@ -157,6 +176,8 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof TasksRoute
   '/team': typeof TeamRoute
   '/customers/$id': typeof CustomersIdRoute
+  '/import-customers/csv': typeof ImportCustomersCsvRoute
+  '/import-customers/manual': typeof ImportCustomersManualRoute
   '/technician/': typeof TechnicianIndexRoute
   '/technician/job/$id': typeof TechnicianJobIdRoute
 }
@@ -168,6 +189,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof CalendarRoute
   '/customers': typeof CustomersRouteWithChildren
   '/equipment': typeof EquipmentRoute
+  '/import-customers': typeof ImportCustomersRouteWithChildren
   '/installations': typeof InstallationsRoute
   '/jobs-pipeline': typeof JobsPipelineRoute
   '/leads': typeof LeadsRoute
@@ -180,6 +202,8 @@ export interface FileRoutesByTo {
   '/tasks': typeof TasksRoute
   '/team': typeof TeamRoute
   '/customers/$id': typeof CustomersIdRoute
+  '/import-customers/csv': typeof ImportCustomersCsvRoute
+  '/import-customers/manual': typeof ImportCustomersManualRoute
   '/technician': typeof TechnicianIndexRoute
   '/technician/job/$id': typeof TechnicianJobIdRoute
 }
@@ -192,6 +216,7 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/customers': typeof CustomersRouteWithChildren
   '/equipment': typeof EquipmentRoute
+  '/import-customers': typeof ImportCustomersRouteWithChildren
   '/installations': typeof InstallationsRoute
   '/jobs-pipeline': typeof JobsPipelineRoute
   '/leads': typeof LeadsRoute
@@ -204,6 +229,8 @@ export interface FileRoutesById {
   '/tasks': typeof TasksRoute
   '/team': typeof TeamRoute
   '/customers/$id': typeof CustomersIdRoute
+  '/import-customers/csv': typeof ImportCustomersCsvRoute
+  '/import-customers/manual': typeof ImportCustomersManualRoute
   '/technician/': typeof TechnicianIndexRoute
   '/technician/job/$id': typeof TechnicianJobIdRoute
 }
@@ -217,6 +244,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/customers'
     | '/equipment'
+    | '/import-customers'
     | '/installations'
     | '/jobs-pipeline'
     | '/leads'
@@ -229,6 +257,8 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/customers/$id'
+    | '/import-customers/csv'
+    | '/import-customers/manual'
     | '/technician/'
     | '/technician/job/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -240,6 +270,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/customers'
     | '/equipment'
+    | '/import-customers'
     | '/installations'
     | '/jobs-pipeline'
     | '/leads'
@@ -252,6 +283,8 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/customers/$id'
+    | '/import-customers/csv'
+    | '/import-customers/manual'
     | '/technician'
     | '/technician/job/$id'
   id:
@@ -263,6 +296,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/customers'
     | '/equipment'
+    | '/import-customers'
     | '/installations'
     | '/jobs-pipeline'
     | '/leads'
@@ -275,6 +309,8 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/team'
     | '/customers/$id'
+    | '/import-customers/csv'
+    | '/import-customers/manual'
     | '/technician/'
     | '/technician/job/$id'
   fileRoutesById: FileRoutesById
@@ -287,6 +323,7 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   CustomersRoute: typeof CustomersRouteWithChildren
   EquipmentRoute: typeof EquipmentRoute
+  ImportCustomersRoute: typeof ImportCustomersRouteWithChildren
   InstallationsRoute: typeof InstallationsRoute
   JobsPipelineRoute: typeof JobsPipelineRoute
   LeadsRoute: typeof LeadsRoute
@@ -381,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InstallationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/import-customers': {
+      id: '/import-customers'
+      path: '/import-customers'
+      fullPath: '/import-customers'
+      preLoaderRoute: typeof ImportCustomersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/equipment': {
       id: '/equipment'
       path: '/equipment'
@@ -437,6 +481,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TechnicianIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/import-customers/manual': {
+      id: '/import-customers/manual'
+      path: '/manual'
+      fullPath: '/import-customers/manual'
+      preLoaderRoute: typeof ImportCustomersManualRouteImport
+      parentRoute: typeof ImportCustomersRoute
+    }
+    '/import-customers/csv': {
+      id: '/import-customers/csv'
+      path: '/csv'
+      fullPath: '/import-customers/csv'
+      preLoaderRoute: typeof ImportCustomersCsvRouteImport
+      parentRoute: typeof ImportCustomersRoute
+    }
     '/customers/$id': {
       id: '/customers/$id'
       path: '/$id'
@@ -466,6 +524,20 @@ const CustomersRouteWithChildren = CustomersRoute._addFileChildren(
   CustomersRouteChildren,
 )
 
+interface ImportCustomersRouteChildren {
+  ImportCustomersCsvRoute: typeof ImportCustomersCsvRoute
+  ImportCustomersManualRoute: typeof ImportCustomersManualRoute
+}
+
+const ImportCustomersRouteChildren: ImportCustomersRouteChildren = {
+  ImportCustomersCsvRoute: ImportCustomersCsvRoute,
+  ImportCustomersManualRoute: ImportCustomersManualRoute,
+}
+
+const ImportCustomersRouteWithChildren = ImportCustomersRoute._addFileChildren(
+  ImportCustomersRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuditLogsRoute: AuditLogsRoute,
@@ -474,6 +546,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   CustomersRoute: CustomersRouteWithChildren,
   EquipmentRoute: EquipmentRoute,
+  ImportCustomersRoute: ImportCustomersRouteWithChildren,
   InstallationsRoute: InstallationsRoute,
   JobsPipelineRoute: JobsPipelineRoute,
   LeadsRoute: LeadsRoute,

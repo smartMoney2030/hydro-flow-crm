@@ -12,7 +12,7 @@ export const CUSTOMER_STAGES: CustomerStage[] = [
 
 export const PAYMENT_STATUSES: PaymentStatus[] = ["Unpaid", "Deposit Paid", "Partially Paid", "Paid"];
 
-export const IMPORT_FIELDS = [
+export const IMPORT_FIELDS: readonly { key: string; label: string; required?: boolean }[] = [
   { key: "firstName", label: "First name", required: true },
   { key: "lastName", label: "Last name", required: true },
   { key: "phone", label: "Phone" },
@@ -35,9 +35,14 @@ export const IMPORT_FIELDS = [
   { key: "previousServiceHistory", label: "Previous service history" },
   { key: "enrolledInMaintenance", label: "Enrolled in annual maintenance" },
   { key: "stage", label: "Current stage" },
-] as const;
+];
 
-export type ImportFieldKey = (typeof IMPORT_FIELDS)[number]["key"];
+export type ImportFieldKey =
+  | "firstName" | "lastName" | "phone" | "email" | "billingAddress" | "propertyAddress"
+  | "originalSaleDate" | "originalInstallDate" | "equipmentType" | "equipmentModel"
+  | "equipmentSerial" | "warrantyExpires" | "purchasePrice" | "paymentStatus"
+  | "lastMaintenance" | "nextMaintenance" | "salespersonName" | "technicianName"
+  | "notes" | "previousServiceHistory" | "enrolledInMaintenance" | "stage";
 
 export function csvTemplate(): string {
   const headers = IMPORT_FIELDS.map((f) => f.label);
