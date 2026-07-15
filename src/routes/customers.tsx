@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { initials, shortDate } from "@/lib/format";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { HistoricalBadge } from "@/components/import/HistoricalBadge";
 
 export const Route = createFileRoute("/customers")({ component: Customers });
 
