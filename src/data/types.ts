@@ -36,6 +36,29 @@ export type MaintenanceStatus =
 export type QuoteStatus = "Draft" | "Sent" | "Accepted" | "Declined" | "Expired";
 export type PaymentStatus = "Unpaid" | "Deposit Paid" | "Partially Paid" | "Paid";
 
+export type CustomerStage =
+  | "Existing Customer"
+  | "Installation Pending"
+  | "Installation Completed"
+  | "Active Maintenance Customer"
+  | "Maintenance Due"
+  | "Maintenance Overdue"
+  | "Inactive Customer";
+
+export interface ImportBatch {
+  id: string;
+  createdAt: string;
+  actorId: string;
+  source: "manual" | "csv";
+  filename?: string;
+  counts: { created: number; updated: number; skipped: number; failed: number };
+  customerIds: string[];
+  equipmentIds: string[];
+  maintenanceIds: string[];
+  eventIds: string[];
+  reversedAt?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -60,6 +83,19 @@ export interface Customer {
   notes: string;
   leadSource: string;
   createdAt: string;
+  isHistorical?: boolean;
+  stage?: CustomerStage;
+  importBatchId?: string;
+  enrolledInMaintenance?: boolean;
+  assignedSalespersonId?: string;
+  assignedTechnicianId?: string;
+  originalSaleDate?: string;
+  originalInstallDate?: string;
+  purchasePrice?: number;
+  paymentStatus?: PaymentStatus;
+  previousServiceHistory?: string;
+  photos?: { name: string; dataUrl: string }[];
+  documents?: { name: string; dataUrl: string }[];
 }
 
 export interface Lead {

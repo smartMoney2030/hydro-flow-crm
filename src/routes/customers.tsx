@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { initials, shortDate } from "@/lib/format";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { HistoricalBadge } from "@/components/import/HistoricalBadge";
 
 export const Route = createFileRoute("/customers")({ component: Customers });
 
@@ -16,7 +17,17 @@ function Customers() {
 
   return (
     <>
-      <PageHeader eyebrow="Directory" title="Customers" description={`${customers.length} customers`} actions={<Button className="bg-primary">+ Add customer</Button>} />
+      <PageHeader
+        eyebrow="Directory"
+        title="Customers"
+        description={`${customers.length} customers`}
+        actions={
+          <>
+            <Link to="/import-customers"><Button variant="outline">Import existing</Button></Link>
+            <Button className="bg-primary">+ Add customer</Button>
+          </>
+        }
+      />
       <Section className="space-y-4">
         <Input placeholder="Search by name, email, phone, address..." value={q} onChange={(e) => setQ(e.target.value)} className="max-w-md" />
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
@@ -28,7 +39,7 @@ function Customers() {
                     {initials(`${c.firstName} ${c.lastName}`)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-medium truncate">{c.firstName} {c.lastName}</div>
+                    <div className="font-medium truncate flex items-center gap-1.5">{c.firstName} {c.lastName}{c.isHistorical && <HistoricalBadge />}</div>
                     <div className="text-xs text-muted-foreground truncate">{c.email}</div>
                     <div className="text-xs text-muted-foreground truncate">{c.phone}</div>
                     <div className="text-[11px] text-muted-foreground truncate mt-1">{c.propertyAddress}</div>

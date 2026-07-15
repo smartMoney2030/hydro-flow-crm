@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { PageHeader, Section } from "@/components/common/PageHeader";
+import { HistoricalBadge } from "@/components/import/HistoricalBadge";
 import { useCRM } from "@/store/crm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -66,8 +67,8 @@ function Customer360() {
                   {initials(`${c.firstName} ${c.lastName}`)}
                 </div>
                 <div className="min-w-0">
-                  <div className="font-semibold truncate">{c.firstName} {c.lastName}</div>
-                  <div className="text-xs text-muted-foreground">Since {shortDate(c.createdAt)}</div>
+                  <div className="font-semibold truncate flex items-center gap-1.5">{c.firstName} {c.lastName}{c.isHistorical && <HistoricalBadge />}</div>
+                  <div className="text-xs text-muted-foreground">{c.stage ? `${c.stage} · ` : ""}Since {shortDate(c.createdAt)}</div>
                 </div>
               </div>
               <dl className="text-sm space-y-2 pt-2">
