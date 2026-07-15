@@ -304,6 +304,9 @@ function CsvWizard() {
       />
       <Section className="space-y-4">
         <StepIndicator step={step} />
+        {progress && <ProgressPanel progress={progress} />}
+
+
 
         {step === 1 && (
           <Card>
