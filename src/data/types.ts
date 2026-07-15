@@ -83,6 +83,19 @@ export interface Customer {
   notes: string;
   leadSource: string;
   createdAt: string;
+  isHistorical?: boolean;
+  stage?: CustomerStage;
+  importBatchId?: string;
+  enrolledInMaintenance?: boolean;
+  assignedSalespersonId?: string;
+  assignedTechnicianId?: string;
+  originalSaleDate?: string;
+  originalInstallDate?: string;
+  purchasePrice?: number;
+  paymentStatus?: PaymentStatus;
+  previousServiceHistory?: string;
+  photos?: { name: string; dataUrl: string }[];
+  documents?: { name: string; dataUrl: string }[];
 }
 
 export interface Lead {
