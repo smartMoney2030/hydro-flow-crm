@@ -553,3 +553,68 @@ function Stat({ label, n, tone }: { label: string; n: number; tone: "ok" | "warn
     </div>
   );
 }
+
+function ProgressPanel({ progress }: { progress: NonNullable<Progress> }) {
+  const pct = progress.total > 0 ? Math.min(100, Math.round((progress.current / progress.total) * 100)) : 0;
+  const phaseLabel = progress.phase === "parse" ? "Parsing CSV" : progress.phase === "preview" ? "Analyzing rows" : "Saving customers";
+  return (
+    <Card>
+      <CardContent className="p-4 space-y-2">
+        <div className="flex items-center gap-2 text-sm">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          <span className="font-medium">{phaseLabel}</span>
+          <span className="text-muted-foreground">— {progress.message}</span>
+          <span className="ml-auto text-xs tabular-nums text-muted-foreground">{pct}%</span>
+        </div>
+        <Progress value={pct} />
+      </CardContent>
+    </Card>
+  );
+}
+
+function ErrorList({ errors }: { errors: ImportError[] }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!errors.length) return null;
+  const shown = expanded ? errors : errors.slice(0, 10);
+  return (
+    <div className="border border-destructive/30 rounded bg-destructive/5">
+      <div className="flex items-center justify-between p-3 border-b border-destructive/20">
+        <div className="flex items-center gap-2 text-sm font-medium text-destructive">
+          <XCircle className="h-4 w-4" />
+          {errors.length} row issue{errors.length === 1 ? "" : "s"}
+        </div>
+        {errors.length > 10 && (
+          <Button size="sm" variant="ghost" onClick={() => setExpanded((v) => !v)}>
+            {expanded ? "Show first 10" : `Show all ${errors.length}`}
+          </Button>
+        )}
+      </div>
+      <div className="max-h-64 overflow-auto text-xs">
+        <table className="w-full">
+          <thead className="bg-muted/40 text-muted-foreground">
+            <tr>
+              <th className="text-left p-2 w-16">Row</th>
+              <th className="text-left p-2 w-20">Phase</th>
+              <th className="text-left p-2">Contact</th>
+              <th className="text-left p-2">Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shown.map((e, i) => (
+              <tr key={i} className="border-t border-destructive/10 align-top">
+                <td className="p-2 tabular-nums">{e.rowIndex}</td>
+                <td className="p-2 capitalize">{e.phase}</td>
+                <td className="p-2">
+                  <div className="font-medium">{e.name || "—"}</div>
+                  {e.address && <div className="text-muted-foreground truncate max-w-[240px]">{e.address}</div>}
+                </td>
+                <td className="p-2 text-destructive">{e.reason}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
