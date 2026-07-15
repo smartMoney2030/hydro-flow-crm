@@ -8,6 +8,7 @@ export const NAV: NavItem[] = [
   { label: "Sales Pipeline", to: "/sales-pipeline", roles: ["admin", "salesperson"], icon: "Waves" },
   { label: "Jobs Pipeline", to: "/jobs-pipeline", roles: ["admin", "scheduler", "salesperson"], icon: "Wrench" },
   { label: "Customers", to: "/customers", roles: ["admin", "salesperson", "scheduler"], icon: "Users" },
+  { label: "Import Customers", to: "/import-customers", roles: ["admin", "salesperson", "scheduler"], icon: "Upload" },
   { label: "Supply Orders", to: "/supply-orders", roles: ["admin", "scheduler"], icon: "PackageSearch" },
   { label: "Calendar", to: "/calendar", roles: ["admin", "scheduler", "salesperson"], icon: "Calendar" },
   { label: "Map", to: "/map", roles: ["admin", "scheduler"], icon: "Map" },
