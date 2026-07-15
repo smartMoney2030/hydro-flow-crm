@@ -368,7 +368,7 @@ function CsvWizard() {
               </div>
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-                <Button onClick={buildPreviews}>Preview →</Button>
+                <Button onClick={buildPreviews} disabled={!!progress}>{progress?.phase === "preview" ? "Analyzing…" : "Preview →"}</Button>
               </div>
             </CardContent>
           </Card>
