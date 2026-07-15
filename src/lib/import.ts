@@ -65,14 +65,48 @@ function csvEscape(v: string) {
 
 export function guessMapping(headers: string[]): Record<string, ImportFieldKey | ""> {
   const map: Record<string, ImportFieldKey | ""> = {};
+  // Google Contacts CSV aliases → CRM field keys (first match wins per field)
+  const aliases: Record<string, ImportFieldKey> = {
+    firstname: "firstName",
+    givenname: "firstName",
+    lastname: "lastName",
+    familyname: "lastName",
+    surname: "lastName",
+    email1value: "email",
+    emailvalue: "email",
+    email: "email",
+    phone1value: "phone",
+    phonevalue: "phone",
+    mobile: "phone",
+    phone: "phone",
+    address1formatted: "propertyAddress",
+    address1street: "propertyAddress",
+    formattedaddress: "propertyAddress",
+    address: "propertyAddress",
+    address2formatted: "billingAddress",
+    address2street: "billingAddress",
+    notes: "notes",
+  };
+  const used = new Set<ImportFieldKey>();
   for (const h of headers) {
     const norm = h.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const aliasKey = aliases[norm];
+    if (aliasKey && !used.has(aliasKey)) {
+      map[h] = aliasKey;
+      used.add(aliasKey);
+      continue;
+    }
     const match = IMPORT_FIELDS.find((f) => {
       const fn = f.label.toLowerCase().replace(/[^a-z0-9]/g, "");
       const kn = f.key.toLowerCase().replace(/[^a-z0-9]/g, "");
-      return fn === norm || kn === norm || norm.includes(kn) || kn.includes(norm);
+      return fn === norm || kn === norm;
     });
-    map[h] = match ? (match.key as ImportFieldKey) : "";
+    if (match && !used.has(match.key as ImportFieldKey)) {
+      map[h] = match.key as ImportFieldKey;
+      used.add(match.key as ImportFieldKey);
+    } else {
+      map[h] = "";
+    }
   }
   return map;
 }
