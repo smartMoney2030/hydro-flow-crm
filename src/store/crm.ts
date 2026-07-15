@@ -5,7 +5,9 @@ import type {
   AutomationRun,
   CalendarEvent,
   Customer,
+  CustomerStage,
   Equipment,
+  ImportBatch,
   Installation,
   Job,
   JobStatus,
@@ -14,11 +16,13 @@ import type {
   MaintenanceStatus,
   MaintenanceVisit,
   Notification,
+  PaymentStatus,
   Role,
   SupplyOrder,
   Task,
   User,
 } from "@/data/types";
+import { addYear, findDuplicates, geocode, type DuplicateMatch } from "@/lib/import";
 import {
   auditLogs as seedAudit,
   automationRules as seedRules,
