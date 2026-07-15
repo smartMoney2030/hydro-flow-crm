@@ -71,6 +71,9 @@ interface CRMState {
   reassignEvent: (id: string, techId: string) => void;
   addAudit: (a: Omit<AuditLog, "id" | "at">) => void;
   addAutomationRun: (r: Omit<AutomationRun, "id" | "at">) => void;
+  addUser: (u: Omit<User, "id">) => User;
+  updateUser: (id: string, patch: Partial<User>) => void;
+  removeUser: (id: string) => void;
 
   findDuplicateCustomers: (candidate: Partial<Customer>) => DuplicateMatch[];
   addExistingCustomer: (input: ExistingCustomerInput, opts?: { batchId?: string; createLead?: boolean }) => { customer: Customer; equipmentIds: string[]; maintenanceIds: string[]; eventIds: string[] };
