@@ -54,6 +54,8 @@ function CsvWizard() {
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, ImportFieldKey | "">>({});
   const [previews, setPreviews] = useState<PreviewRow[]>([]);
+  const [progress, setProgress] = useState<Progress>(null);
+  const [errors, setErrors] = useState<ImportError[]>([]);
   const [report, setReport] = useState<{ created: number; updated: number; skipped: number; failed: number; batchId?: string } | null>(null);
 
   const download = () => {
@@ -68,78 +70,141 @@ function CsvWizard() {
 
   const handleFile = (file: File) => {
     setFilename(file.name);
+    setErrors([]);
+    const data: Row[] = [];
+    const parseErrs: ImportError[] = [];
+    let parsedCount = 0;
+    let lastUi = 0;
+    // Use file.size for a rough progress denominator during streaming
+    setProgress({ phase: "parse", current: 0, total: file.size, message: `Reading ${file.name}…` });
     Papa.parse<Row>(file, {
       header: true,
       skipEmptyLines: true,
+      chunkSize: 512 * 1024,
+      chunk: (results, parser) => {
+        for (const r of results.data) {
+          if (Object.values(r).some((v) => String(v ?? "").trim())) data.push(r);
+        }
+        parsedCount += results.data.length;
+        for (const e of results.errors || []) {
+          parseErrs.push({
+            rowIndex: (e.row ?? parsedCount) + 1,
+            name: "",
+            address: "",
+            reason: `${e.code || "ParseError"}: ${e.message}`,
+            phase: "parse",
+          });
+        }
+        // Update UI at most every 60ms — Papa exposes a cursor
+        const now = Date.now();
+        const cursor = (results.meta as { cursor?: number }).cursor ?? 0;
+        if (now - lastUi > 60) {
+          lastUi = now;
+          setProgress({
+            phase: "parse",
+            current: cursor,
+            total: file.size,
+            message: `Parsed ${parsedCount.toLocaleString()} rows…`,
+          });
+        }
+        // Keep parser alive; chunk mode returns void
+        void parser;
+      },
       complete: (res) => {
-        const data = res.data.filter((r) => Object.values(r).some((v) => String(v).trim()));
         const hs = res.meta.fields || [];
         setRows(data);
         setHeaders(hs);
         setMapping(guessMapping(hs));
+        setErrors(parseErrs);
+        setProgress(null);
+        if (parseErrs.length) toast.warning(`Parsed with ${parseErrs.length} row issue${parseErrs.length === 1 ? "" : "s"} — see errors below`);
         setStep(2);
       },
-      error: () => toast.error("Could not parse CSV file"),
+      error: (err) => {
+        setProgress(null);
+        toast.error(`Could not parse CSV file: ${err.message}`);
+      },
     });
   };
 
-  const buildPreviews = () => {
+  const buildPreviews = async () => {
     const invMap: Partial<Record<ImportFieldKey, string>> = {};
     for (const [h, k] of Object.entries(mapping)) if (k) invMap[k] = h;
-
     const pickName = (val: string) => users.find((u) => u.name.toLowerCase() === (val || "").toLowerCase())?.id;
-    const list: PreviewRow[] = rows.map((r) => {
-      const get = (k: ImportFieldKey) => (invMap[k] ? String(r[invMap[k]!] ?? "").trim() : "");
-      const rawStage = get("stage");
-      const stage = (CUSTOMER_STAGES.find((s) => s.toLowerCase() === rawStage.toLowerCase()) || "Existing Customer") as CustomerStage;
-      const input: ExistingCustomerInput = {
-        firstName: get("firstName"),
-        lastName: get("lastName"),
-        phone: get("phone"),
-        email: get("email"),
-        billingAddress: get("billingAddress"),
-        propertyAddress: get("propertyAddress"),
-        notes: get("notes"),
-        stage,
-        originalSaleDate: toISODateOrUndef(get("originalSaleDate")),
-        originalInstallDate: toISODateOrUndef(get("originalInstallDate")),
-        purchasePrice: get("purchasePrice") ? Number(get("purchasePrice")) : undefined,
-        paymentStatus: (get("paymentStatus") as PaymentStatus) || undefined,
-        assignedSalespersonId: pickName(get("salespersonName")),
-        assignedTechnicianId: pickName(get("technicianName")),
-        enrolledInMaintenance: parseBool(get("enrolledInMaintenance")),
-        lastMaintenance: toISODateOrUndef(get("lastMaintenance")),
-        nextMaintenance: toISODateOrUndef(get("nextMaintenance")),
-        previousServiceHistory: get("previousServiceHistory"),
-        equipment: get("equipmentType") || get("equipmentModel") || get("equipmentSerial")
-          ? [{ type: get("equipmentType"), model: get("equipmentModel"), serial: get("equipmentSerial"), warrantyExpires: toISODateOrUndef(get("warrantyExpires")) }]
-          : [],
-      };
 
-      const missing: string[] = [];
-      for (const f of IMPORT_FIELDS) {
-        if (f.required && !(input as unknown as Record<string, unknown>)[f.key]) missing.push(f.label);
+    const list: PreviewRow[] = [];
+    const previewErrs: ImportError[] = [];
+    const CHUNK = 250;
+    setProgress({ phase: "preview", current: 0, total: rows.length, message: "Analyzing rows…" });
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      try {
+        const get = (k: ImportFieldKey) => (invMap[k] ? String(r[invMap[k]!] ?? "").trim() : "");
+        const rawStage = get("stage");
+        const stage = (CUSTOMER_STAGES.find((s) => s.toLowerCase() === rawStage.toLowerCase()) || "Existing Customer") as CustomerStage;
+        const priceRaw = get("purchasePrice");
+        const priceNum = priceRaw ? Number(priceRaw.replace(/[^0-9.-]/g, "")) : undefined;
+        if (priceRaw && (priceNum === undefined || Number.isNaN(priceNum))) {
+          previewErrs.push({ rowIndex: i + 2, name: `${get("firstName")} ${get("lastName")}`.trim(), address: get("propertyAddress"), reason: `Purchase price "${priceRaw}" isn't a number`, phase: "preview" });
+        }
+        const input: ExistingCustomerInput = {
+          firstName: get("firstName"),
+          lastName: get("lastName"),
+          phone: get("phone"),
+          email: get("email"),
+          billingAddress: get("billingAddress"),
+          propertyAddress: get("propertyAddress"),
+          notes: get("notes"),
+          stage,
+          originalSaleDate: toISODateOrUndef(get("originalSaleDate")),
+          originalInstallDate: toISODateOrUndef(get("originalInstallDate")),
+          purchasePrice: priceNum !== undefined && !Number.isNaN(priceNum) ? priceNum : undefined,
+          paymentStatus: (get("paymentStatus") as PaymentStatus) || undefined,
+          assignedSalespersonId: pickName(get("salespersonName")),
+          assignedTechnicianId: pickName(get("technicianName")),
+          enrolledInMaintenance: parseBool(get("enrolledInMaintenance")),
+          lastMaintenance: toISODateOrUndef(get("lastMaintenance")),
+          nextMaintenance: toISODateOrUndef(get("nextMaintenance")),
+          previousServiceHistory: get("previousServiceHistory"),
+          equipment: get("equipmentType") || get("equipmentModel") || get("equipmentSerial")
+            ? [{ type: get("equipmentType"), model: get("equipmentModel"), serial: get("equipmentSerial"), warrantyExpires: toISODateOrUndef(get("warrantyExpires")) }]
+            : [],
+        };
+
+        const missing: string[] = [];
+        for (const f of IMPORT_FIELDS) {
+          if (f.required && !(input as unknown as Record<string, unknown>)[f.key]) missing.push(f.label);
+        }
+        const dupes = findDupes({
+          firstName: input.firstName,
+          lastName: input.lastName,
+          phone: input.phone,
+          email: input.email,
+          propertyAddress: input.propertyAddress,
+        });
+        const dup = dupes[0];
+        list.push({
+          row: r,
+          input,
+          missing,
+          duplicateId: dup?.customer.id,
+          duplicateReasons: dup?.reasons,
+          resolution: missing.length ? "skip" : dup ? "skip" : "create",
+        });
+      } catch (e) {
+        previewErrs.push({ rowIndex: i + 2, name: "", address: "", reason: e instanceof Error ? e.message : "Unknown parsing error", phase: "preview" });
       }
 
-      const dupes = findDupes({
-        firstName: input.firstName,
-        lastName: input.lastName,
-        phone: input.phone,
-        email: input.email,
-        propertyAddress: input.propertyAddress,
-      });
-      const dup = dupes[0];
-
-      return {
-        row: r,
-        input,
-        missing,
-        duplicateId: dup?.customer.id,
-        duplicateReasons: dup?.reasons,
-        resolution: missing.length ? "skip" : dup ? "skip" : "create",
-      };
-    });
+      if ((i + 1) % CHUNK === 0 || i === rows.length - 1) {
+        setProgress({ phase: "preview", current: i + 1, total: rows.length, message: `Analyzing rows… ${(i + 1).toLocaleString()} / ${rows.length.toLocaleString()}` });
+        await yieldToUI();
+      }
+    }
     setPreviews(list);
+    setErrors((prev) => [...prev, ...previewErrs]);
+    setProgress(null);
+    if (previewErrs.length) toast.warning(`${previewErrs.length} row${previewErrs.length === 1 ? "" : "s"} had parsing issues`);
     setStep(3);
   };
 
@@ -149,20 +214,27 @@ function CsvWizard() {
   const bulkResolve = (res: Resolution) =>
     setPreviews((p) => p.map((row) => (row.duplicateId ? { ...row, resolution: res } : row)));
 
-  const runImport = () => {
+  const runImport = async () => {
     let created = 0, updated = 0, skipped = 0, failed = 0;
     const customerIds: string[] = [];
     const equipmentIds: string[] = [];
     const maintenanceIds: string[] = [];
     const eventIds: string[] = [];
+    const saveErrs: ImportError[] = [];
+    const CHUNK = 100;
 
-    for (const p of previews) {
+    setProgress({ phase: "save", current: 0, total: previews.length, message: "Saving customers…" });
+
+    for (let i = 0; i < previews.length; i++) {
+      const p = previews[i];
+      const nameStr = `${p.input.firstName || ""} ${p.input.lastName || ""}`.trim() || "(no name)";
       try {
-        if (p.missing.length || p.resolution === "skip") {
-          if (p.missing.length && p.resolution !== "skip") failed++;
-          else skipped++;
+        if (p.missing.length) {
+          skipped++;
+          saveErrs.push({ rowIndex: i + 2, name: nameStr, address: p.input.propertyAddress || "", reason: `Missing required: ${p.missing.join(", ")}`, phase: "save" });
           continue;
         }
+        if (p.resolution === "skip") { skipped++; continue; }
         if (p.resolution === "update" && p.duplicateId) {
           updateCustomer(p.duplicateId, {
             phone: p.input.phone || undefined,
@@ -187,10 +259,17 @@ function CsvWizard() {
           eventIds.push(...r.eventIds);
           created++;
         }
-      } catch {
+      } catch (e) {
         failed++;
+        saveErrs.push({ rowIndex: i + 2, name: nameStr, address: p.input.propertyAddress || "", reason: e instanceof Error ? e.message : "Unknown save error", phase: "save" });
+      }
+
+      if ((i + 1) % CHUNK === 0 || i === previews.length - 1) {
+        setProgress({ phase: "save", current: i + 1, total: previews.length, message: `Saving… ${(i + 1).toLocaleString()} / ${previews.length.toLocaleString()}` });
+        await yieldToUI();
       }
     }
+
     const batch = commitBatch({
       source: "csv",
       filename,
@@ -200,10 +279,14 @@ function CsvWizard() {
       maintenanceIds,
       eventIds,
     });
+    setErrors((prev) => [...prev, ...saveErrs]);
     setReport({ created, updated, skipped, failed, batchId: batch.id });
+    setProgress(null);
     setStep(4);
-    toast.success(`Imported ${created} customer${created === 1 ? "" : "s"}`);
+    if (failed > 0) toast.error(`Imported ${created} · ${failed} failed — see error list below`);
+    else toast.success(`Imported ${created} customer${created === 1 ? "" : "s"}`);
   };
+
 
   const dupeCount = useMemo(() => previews.filter((p) => p.duplicateId).length, [previews]);
 
