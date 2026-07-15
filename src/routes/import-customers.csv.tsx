@@ -34,6 +34,11 @@ type PreviewRow = {
   duplicateReasons?: string[];
   resolution: Resolution;
 };
+type ImportError = { rowIndex: number; name: string; address: string; reason: string; phase: "parse" | "preview" | "save" };
+type Progress = { phase: "parse" | "preview" | "save"; current: number; total: number; message: string } | null;
+
+const yieldToUI = () => new Promise<void>((r) => setTimeout(r, 0));
+
 
 function CsvWizard() {
   const navigate = useNavigate();
