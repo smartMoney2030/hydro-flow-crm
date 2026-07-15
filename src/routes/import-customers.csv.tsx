@@ -471,7 +471,7 @@ function CsvWizard() {
               </div>
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
-                <Button onClick={runImport}>Import {previews.filter((p) => p.resolution !== "skip" && !p.missing.length).length} rows</Button>
+                <Button onClick={runImport} disabled={!!progress}>{progress?.phase === "save" ? "Saving…" : `Import ${previews.filter((p) => p.resolution !== "skip" && !p.missing.length).length} rows`}</Button>
               </div>
             </CardContent>
           </Card>
