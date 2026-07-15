@@ -355,6 +355,20 @@ export const useCRM = create<CRMState>((set, get) => ({
     set((s) => ({
       audit: [{ id: `a${s.audit.length + 1}-${Date.now()}`, at: new Date().toISOString(), ...a }, ...s.audit].slice(0, 200),
     })),
+  addUser: (u) => {
+    const user: User = { id: uid("u"), ...u };
+    set((s) => ({ users: [...s.users, user] }));
+    get().addAudit({ actorId: get().currentUserId, action: "created", entity: "User", entityId: user.id, detail: user.name });
+    return user;
+  },
+  updateUser: (id, patch) => {
+    set((s) => ({ users: s.users.map((u) => (u.id === id ? { ...u, ...patch } : u)) }));
+    get().addAudit({ actorId: get().currentUserId, action: "updated", entity: "User", entityId: id, detail: "Team member edited" });
+  },
+  removeUser: (id) => {
+    set((s) => ({ users: s.users.filter((u) => u.id !== id) }));
+    get().addAudit({ actorId: get().currentUserId, action: "deleted", entity: "User", entityId: id, detail: "Team member removed" });
+  },
   addAutomationRun: (r) =>
     set((s) => ({
       automationRuns: [{ id: `arn-${Date.now()}`, at: new Date().toISOString(), ...r }, ...s.automationRuns].slice(0, 100),
