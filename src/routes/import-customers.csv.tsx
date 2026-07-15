@@ -18,7 +18,8 @@ import {
   type ImportFieldKey,
 } from "@/lib/import";
 import { toast } from "sonner";
-import { ArrowLeft, Download, Upload, Undo2, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Download, Upload, Undo2, CheckCircle2, AlertCircle, XCircle, Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import type { CustomerStage, PaymentStatus } from "@/data/types";
 
 export const Route = createFileRoute("/import-customers/csv")({ component: CsvWizard });
