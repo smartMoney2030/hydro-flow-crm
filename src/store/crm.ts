@@ -394,6 +394,7 @@ export const useCRM = create<CRMState>((set, get) => ({
       equipment: s.equipment.filter((e) => !batch.equipmentIds.includes(e.id)),
       maintenance: s.maintenance.filter((m) => !batch.maintenanceIds.includes(m.id)),
       events: s.events.filter((e) => !batch.eventIds.includes(e.id)),
+      leads: s.leads.filter((l) => !(batch.leadIds || []).includes(l.id)),
       importBatches: s.importBatches.map((b) => (b.id === id ? { ...b, reversedAt: new Date().toISOString() } : b)),
     }));
     get().addAudit({ actorId: state.currentUserId, action: "reversed", entity: "ImportBatch", entityId: id, detail: `Removed ${batch.customerIds.length} imported customers` });
