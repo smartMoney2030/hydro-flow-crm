@@ -424,6 +424,17 @@ function CsvWizard() {
               <p className="text-xs text-muted-foreground">
                 "Junk names" are contacts whose name starts with punctuation, a digit, or prefixes like "1st", "2nd", "test", "info" — common Google Contacts placeholders that aren't real people.
               </p>
+              <label className="flex items-start gap-2 rounded border bg-muted/30 p-3 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 accent-primary"
+                  checked={alsoCreateLeads}
+                  onChange={(e) => setAlsoCreateLeads(e.target.checked)}
+                />
+                <span>
+                  <span className="font-medium">Also create a sales lead</span> for every new customer imported (status "New Lead"). Useful when you want to nurture imported contacts through the sales pipeline.
+                </span>
+              </label>
               <div className="border rounded overflow-x-auto max-h-[520px]">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 text-xs sticky top-0">
