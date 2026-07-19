@@ -56,6 +56,7 @@ export interface ImportBatch {
   equipmentIds: string[];
   maintenanceIds: string[];
   eventIds: string[];
+  leadIds?: string[];
   reversedAt?: string;
 }
 
