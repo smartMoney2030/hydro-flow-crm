@@ -92,7 +92,7 @@ interface CRMState {
   removeUser: (id: string) => void;
 
   findDuplicateCustomers: (candidate: Partial<Customer>) => DuplicateMatch[];
-  addExistingCustomer: (input: ExistingCustomerInput, opts?: { batchId?: string; createLead?: boolean }) => { customer: Customer; equipmentIds: string[]; maintenanceIds: string[]; eventIds: string[] };
+  addExistingCustomer: (input: ExistingCustomerInput, opts?: { batchId?: string; createLead?: boolean }) => { customer: Customer; equipmentIds: string[]; maintenanceIds: string[]; eventIds: string[]; leadId?: string };
   updateCustomer: (id: string, patch: Partial<Customer>) => void;
   commitImportBatch: (batch: Omit<ImportBatch, "id" | "createdAt" | "actorId">) => ImportBatch;
   reverseImportBatch: (id: string) => boolean;
@@ -337,11 +337,29 @@ export const useCRM = create<CRMState>((set, get) => ({
       }
     }
 
+    let leadId: string | undefined;
+    let newLead: Lead | undefined;
+    if (opts?.createLead) {
+      leadId = uid("l");
+      newLead = {
+        id: leadId,
+        customerId: custId,
+        status: "New Lead",
+        assignedTo: input.assignedSalespersonId || get().currentUserId,
+        waterConcerns: [],
+        currentEquipment: (input.equipment || []).map((e) => [e.type, e.model].filter(Boolean).join(" ")).filter(Boolean).join(", "),
+        quoteStatus: "Draft",
+        notes: `Auto-created from existing customer import (stage: ${input.stage})`,
+        createdAt: new Date().toISOString(),
+      };
+    }
+
     set((s) => ({
       customers: [customer, ...s.customers],
       equipment: [...newEquipment, ...s.equipment],
       maintenance: [...newMaint, ...s.maintenance],
       events: [...newEvents, ...s.events],
+      leads: newLead ? [newLead, ...s.leads] : s.leads,
     }));
 
     get().addAudit({
@@ -349,10 +367,10 @@ export const useCRM = create<CRMState>((set, get) => ({
       action: "imported",
       entity: "Customer",
       entityId: custId,
-      detail: `Existing customer added at stage "${input.stage}"`,
+      detail: `Existing customer added at stage "${input.stage}"${leadId ? " (+ lead)" : ""}`,
     });
 
-    return { customer, equipmentIds, maintenanceIds, eventIds };
+    return { customer, equipmentIds, maintenanceIds, eventIds, leadId };
   },
 
   commitImportBatch: (batch) => {
@@ -376,6 +394,7 @@ export const useCRM = create<CRMState>((set, get) => ({
       equipment: s.equipment.filter((e) => !batch.equipmentIds.includes(e.id)),
       maintenance: s.maintenance.filter((m) => !batch.maintenanceIds.includes(m.id)),
       events: s.events.filter((e) => !batch.eventIds.includes(e.id)),
+      leads: s.leads.filter((l) => !(batch.leadIds || []).includes(l.id)),
       importBatches: s.importBatches.map((b) => (b.id === id ? { ...b, reversedAt: new Date().toISOString() } : b)),
     }));
     get().addAudit({ actorId: state.currentUserId, action: "reversed", entity: "ImportBatch", entityId: id, detail: `Removed ${batch.customerIds.length} imported customers` });

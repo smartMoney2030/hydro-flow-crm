@@ -56,7 +56,8 @@ function CsvWizard() {
   const [previews, setPreviews] = useState<PreviewRow[]>([]);
   const [progress, setProgress] = useState<Progress>(null);
   const [errors, setErrors] = useState<ImportError[]>([]);
-  const [report, setReport] = useState<{ created: number; updated: number; skipped: number; failed: number; batchId?: string } | null>(null);
+  const [report, setReport] = useState<{ created: number; updated: number; skipped: number; failed: number; leads: number; batchId?: string } | null>(null);
+  const [alsoCreateLeads, setAlsoCreateLeads] = useState(false);
 
   const download = () => {
     const blob = new Blob([csvTemplate()], { type: "text/csv" });
@@ -215,11 +216,12 @@ function CsvWizard() {
     setPreviews((p) => p.map((row) => (row.duplicateId ? { ...row, resolution: res } : row)));
 
   const runImport = async () => {
-    let created = 0, updated = 0, skipped = 0, failed = 0;
+    let created = 0, updated = 0, skipped = 0, failed = 0, leadsCreated = 0;
     const customerIds: string[] = [];
     const equipmentIds: string[] = [];
     const maintenanceIds: string[] = [];
     const eventIds: string[] = [];
+    const leadIds: string[] = [];
     const saveErrs: ImportError[] = [];
     const CHUNK = 100;
 
@@ -252,11 +254,12 @@ function CsvWizard() {
           });
           updated++;
         } else {
-          const r = addExisting(p.input);
+          const r = addExisting(p.input, { createLead: alsoCreateLeads });
           customerIds.push(r.customer.id);
           equipmentIds.push(...r.equipmentIds);
           maintenanceIds.push(...r.maintenanceIds);
           eventIds.push(...r.eventIds);
+          if (r.leadId) { leadIds.push(r.leadId); leadsCreated++; }
           created++;
         }
       } catch (e) {
@@ -278,13 +281,14 @@ function CsvWizard() {
       equipmentIds,
       maintenanceIds,
       eventIds,
+      leadIds,
     });
     setErrors((prev) => [...prev, ...saveErrs]);
-    setReport({ created, updated, skipped, failed, batchId: batch.id });
+    setReport({ created, updated, skipped, failed, leads: leadsCreated, batchId: batch.id });
     setProgress(null);
     setStep(4);
     if (failed > 0) toast.error(`Imported ${created} · ${failed} failed — see error list below`);
-    else toast.success(`Imported ${created} customer${created === 1 ? "" : "s"}`);
+    else toast.success(`Imported ${created} customer${created === 1 ? "" : "s"}${leadsCreated ? ` · ${leadsCreated} lead${leadsCreated === 1 ? "" : "s"}` : ""}`);
   };
 
 
@@ -420,6 +424,17 @@ function CsvWizard() {
               <p className="text-xs text-muted-foreground">
                 "Junk names" are contacts whose name starts with punctuation, a digit, or prefixes like "1st", "2nd", "test", "info" — common Google Contacts placeholders that aren't real people.
               </p>
+              <label className="flex items-start gap-2 rounded border bg-muted/30 p-3 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 accent-primary"
+                  checked={alsoCreateLeads}
+                  onChange={(e) => setAlsoCreateLeads(e.target.checked)}
+                />
+                <span>
+                  <span className="font-medium">Also create a sales lead</span> for every new customer imported (status "New Lead"). Useful when you want to nurture imported contacts through the sales pipeline.
+                </span>
+              </label>
               <div className="border rounded overflow-x-auto max-h-[520px]">
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 text-xs sticky top-0">
@@ -482,18 +497,20 @@ function CsvWizard() {
         {step === 4 && report && (
           <Card>
             <CardContent className="p-6 space-y-4">
-              <div className="grid gap-3 sm:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-5">
                 <Stat label="Created" n={report.created} tone="ok" />
                 <Stat label="Updated" n={report.updated} tone="ok" />
+                <Stat label="Leads" n={report.leads} tone="ok" />
                 <Stat label="Skipped" n={report.skipped} tone="warn" />
                 <Stat label="Failed" n={report.failed} tone="bad" />
               </div>
               <div className="text-sm text-muted-foreground">
-                Imported customers are tagged as <em>Historical data</em>. Property addresses were geocoded and pinned on the map; future installations and maintenance were added to the calendar.
+                Imported customers are tagged as <em>Historical data</em>. Property addresses were geocoded and pinned on the map; future installations and maintenance were added to the calendar{report.leads > 0 ? "; new sales leads were created in the pipeline" : ""}.
               </div>
               <ErrorList errors={errors} />
               <div className="flex flex-wrap gap-2">
                 <Link to="/customers"><Button variant="outline">View customers</Button></Link>
+                {report.leads > 0 && <Link to="/leads"><Button variant="outline">View leads</Button></Link>}
                 <Link to="/map"><Button variant="outline">Open map</Button></Link>
                 <Button
                   variant="outline"
