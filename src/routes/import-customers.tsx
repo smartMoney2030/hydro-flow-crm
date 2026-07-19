@@ -52,7 +52,7 @@ function ImportLanding() {
                   Upload a spreadsheet, map columns to CRM fields, preview and resolve duplicates, then import
                   in one batch. Admins can undo the batch afterward.
                 </p>
-                <Button variant="outline" size="sm">Open CSV wizard →</Button>
+                <Button variant="outline" size="sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate({ to: "/import-customers/csv" }); }}>Open CSV wizard →</Button>
               </CardContent>
             </Card>
           </Link>
