@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageHeader, Section } from "@/components/common/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,13 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/import-customers")({ component: ImportLanding });
 
+
 function ImportLanding() {
   const batches = useCRM((s) => s.importBatches);
   const role = useCRM((s) => s.role);
   const reverse = useCRM((s) => s.reverseImportBatch);
+  const navigate = useNavigate();
+
 
   return (
     <>
@@ -34,7 +37,7 @@ function ImportLanding() {
                   Enter one customer with their equipment, purchase, and maintenance history. Choose their current
                   stage — they don't need to start as a new lead.
                 </p>
-                <Button variant="outline" size="sm">Start manual entry →</Button>
+                <Button variant="outline" size="sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate({ to: "/import-customers/manual" }); }}>Start manual entry →</Button>
               </CardContent>
             </Card>
           </Link>
@@ -49,7 +52,7 @@ function ImportLanding() {
                   Upload a spreadsheet, map columns to CRM fields, preview and resolve duplicates, then import
                   in one batch. Admins can undo the batch afterward.
                 </p>
-                <Button variant="outline" size="sm">Open CSV wizard →</Button>
+                <Button variant="outline" size="sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate({ to: "/import-customers/csv" }); }}>Open CSV wizard →</Button>
               </CardContent>
             </Card>
           </Link>
