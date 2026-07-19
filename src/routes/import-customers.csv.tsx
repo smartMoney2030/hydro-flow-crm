@@ -56,7 +56,8 @@ function CsvWizard() {
   const [previews, setPreviews] = useState<PreviewRow[]>([]);
   const [progress, setProgress] = useState<Progress>(null);
   const [errors, setErrors] = useState<ImportError[]>([]);
-  const [report, setReport] = useState<{ created: number; updated: number; skipped: number; failed: number; batchId?: string } | null>(null);
+  const [report, setReport] = useState<{ created: number; updated: number; skipped: number; failed: number; leads: number; batchId?: string } | null>(null);
+  const [alsoCreateLeads, setAlsoCreateLeads] = useState(false);
 
   const download = () => {
     const blob = new Blob([csvTemplate()], { type: "text/csv" });
