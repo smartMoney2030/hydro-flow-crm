@@ -92,7 +92,7 @@ interface CRMState {
   removeUser: (id: string) => void;
 
   findDuplicateCustomers: (candidate: Partial<Customer>) => DuplicateMatch[];
-  addExistingCustomer: (input: ExistingCustomerInput, opts?: { batchId?: string; createLead?: boolean }) => { customer: Customer; equipmentIds: string[]; maintenanceIds: string[]; eventIds: string[] };
+  addExistingCustomer: (input: ExistingCustomerInput, opts?: { batchId?: string; createLead?: boolean }) => { customer: Customer; equipmentIds: string[]; maintenanceIds: string[]; eventIds: string[]; leadId?: string };
   updateCustomer: (id: string, patch: Partial<Customer>) => void;
   commitImportBatch: (batch: Omit<ImportBatch, "id" | "createdAt" | "actorId">) => ImportBatch;
   reverseImportBatch: (id: string) => boolean;
