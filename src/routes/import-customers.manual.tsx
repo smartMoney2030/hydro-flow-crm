@@ -100,7 +100,7 @@ function ManualEntry() {
       navigate({ to: "/customers/$id", params: { id: editingId } });
       return;
     }
-    const result = addExisting(form);
+    const result = addExisting(form, { createLead });
     commitBatch({
       source: "manual",
       counts: { created: 1, updated: 0, skipped: 0, failed: 0 },
@@ -108,11 +108,9 @@ function ManualEntry() {
       equipmentIds: result.equipmentIds,
       maintenanceIds: result.maintenanceIds,
       eventIds: result.eventIds,
+      leadIds: result.leadId ? [result.leadId] : [],
     });
-    if (createLead) {
-      // A lead-creation path exists in the full pipeline; here we surface a note
-      toast.info("A sales lead was also flagged for this customer.");
-    }
+    if (result.leadId) toast.info("A sales lead was also created for this customer.");
     toast.success("Existing customer added");
     navigate({ to: "/customers/$id", params: { id: result.customer.id } });
   };
