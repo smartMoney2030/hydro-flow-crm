@@ -145,6 +145,22 @@ export interface SupplyOrder {
   notes: string;
 }
 
+export interface InventoryItem {
+  id: string;
+  sku: string;
+  name: string;
+  category: string;
+  unit: string;
+  onHand: number;
+  reorderLevel: number;
+  reorderQty: number;
+  vendor?: string;
+  unitCost?: number;
+  location?: string;
+  notes?: string;
+  updatedAt: string;
+}
+
 export interface Installation {
   id: string;
   customerId: string;
