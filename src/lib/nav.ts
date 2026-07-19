@@ -22,7 +22,7 @@ export const NAV: NavItem[] = [
   { label: "Chemicals", to: "/chemicals", roles: ["admin", "scheduler"], icon: "FlaskConical", group: "Operations" },
 
   { label: "Customers", to: "/customers", roles: ["admin", "salesperson", "scheduler"], icon: "Users", group: "Clients" },
-  { label: "Import Customers", to: "/import-customers", roles: ["admin", "salesperson", "scheduler"], icon: "Upload", group: "Clients" },
+  
   { label: "Client Hub", to: "/client-hub", roles: ["admin", "salesperson", "scheduler"], icon: "Globe", group: "Clients" },
 
   { label: "Invoices", to: "/invoices", roles: ["admin", "salesperson"], icon: "FileText", group: "Financials" },
