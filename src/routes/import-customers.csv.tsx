@@ -497,18 +497,20 @@ function CsvWizard() {
         {step === 4 && report && (
           <Card>
             <CardContent className="p-6 space-y-4">
-              <div className="grid gap-3 sm:grid-cols-4">
+              <div className="grid gap-3 sm:grid-cols-5">
                 <Stat label="Created" n={report.created} tone="ok" />
                 <Stat label="Updated" n={report.updated} tone="ok" />
+                <Stat label="Leads" n={report.leads} tone="ok" />
                 <Stat label="Skipped" n={report.skipped} tone="warn" />
                 <Stat label="Failed" n={report.failed} tone="bad" />
               </div>
               <div className="text-sm text-muted-foreground">
-                Imported customers are tagged as <em>Historical data</em>. Property addresses were geocoded and pinned on the map; future installations and maintenance were added to the calendar.
+                Imported customers are tagged as <em>Historical data</em>. Property addresses were geocoded and pinned on the map; future installations and maintenance were added to the calendar{report.leads > 0 ? "; new sales leads were created in the pipeline" : ""}.
               </div>
               <ErrorList errors={errors} />
               <div className="flex flex-wrap gap-2">
                 <Link to="/customers"><Button variant="outline">View customers</Button></Link>
+                {report.leads > 0 && <Link to="/leads"><Button variant="outline">View leads</Button></Link>}
                 <Link to="/map"><Button variant="outline">Open map</Button></Link>
                 <Button
                   variant="outline"
