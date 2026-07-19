@@ -9,20 +9,33 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TimesheetsRouteImport } from './routes/timesheets'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as SupplyOrdersRouteImport } from './routes/supply-orders'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SalesPipelineRouteImport } from './routes/sales-pipeline'
+import { Route as RequestsRouteImport } from './routes/requests'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as ReferAndEarnRouteImport } from './routes/refer-and-earn'
+import { Route as ReceptionistRouteImport } from './routes/receptionist'
+import { Route as QuotesRouteImport } from './routes/quotes'
+import { Route as PaymentsRouteImport } from './routes/payments'
+import { Route as MessagesRouteImport } from './routes/messages'
+import { Route as MarketingRouteImport } from './routes/marketing'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as LeadsRouteImport } from './routes/leads'
 import { Route as JobsPipelineRouteImport } from './routes/jobs-pipeline'
+import { Route as JobFormsRouteImport } from './routes/job-forms'
+import { Route as InvoicesRouteImport } from './routes/invoices'
 import { Route as InstallationsRouteImport } from './routes/installations'
 import { Route as ImportCustomersRouteImport } from './routes/import-customers'
+import { Route as ExpensesRouteImport } from './routes/expenses'
 import { Route as EquipmentRouteImport } from './routes/equipment'
 import { Route as CustomersRouteImport } from './routes/customers'
+import { Route as ClientHubRouteImport } from './routes/client-hub'
+import { Route as ChemicalsRouteImport } from './routes/chemicals'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AutomationsRouteImport } from './routes/automations'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -34,6 +47,11 @@ import { Route as ImportCustomersCsvRouteImport } from './routes/import-customer
 import { Route as CustomersIdRouteImport } from './routes/customers.$id'
 import { Route as TechnicianJobIdRouteImport } from './routes/technician.job.$id'
 
+const TimesheetsRoute = TimesheetsRouteImport.update({
+  id: '/timesheets',
+  path: '/timesheets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeamRoute = TeamRouteImport.update({
   id: '/team',
   path: '/team',
@@ -59,9 +77,44 @@ const SalesPipelineRoute = SalesPipelineRouteImport.update({
   path: '/sales-pipeline',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RequestsRoute = RequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReferAndEarnRoute = ReferAndEarnRouteImport.update({
+  id: '/refer-and-earn',
+  path: '/refer-and-earn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReceptionistRoute = ReceptionistRouteImport.update({
+  id: '/receptionist',
+  path: '/receptionist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuotesRoute = QuotesRouteImport.update({
+  id: '/quotes',
+  path: '/quotes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentsRoute = PaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketingRoute = MarketingRouteImport.update({
+  id: '/marketing',
+  path: '/marketing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MapRoute = MapRouteImport.update({
@@ -84,6 +137,16 @@ const JobsPipelineRoute = JobsPipelineRouteImport.update({
   path: '/jobs-pipeline',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JobFormsRoute = JobFormsRouteImport.update({
+  id: '/job-forms',
+  path: '/job-forms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvoicesRoute = InvoicesRouteImport.update({
+  id: '/invoices',
+  path: '/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InstallationsRoute = InstallationsRouteImport.update({
   id: '/installations',
   path: '/installations',
@@ -94,6 +157,11 @@ const ImportCustomersRoute = ImportCustomersRouteImport.update({
   path: '/import-customers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExpensesRoute = ExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EquipmentRoute = EquipmentRouteImport.update({
   id: '/equipment',
   path: '/equipment',
@@ -102,6 +170,16 @@ const EquipmentRoute = EquipmentRouteImport.update({
 const CustomersRoute = CustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientHubRoute = ClientHubRouteImport.update({
+  id: '/client-hub',
+  path: '/client-hub',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChemicalsRoute = ChemicalsRouteImport.update({
+  id: '/chemicals',
+  path: '/chemicals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CalendarRoute = CalendarRouteImport.update({
@@ -161,20 +239,33 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/automations': typeof AutomationsRoute
   '/calendar': typeof CalendarRoute
+  '/chemicals': typeof ChemicalsRoute
+  '/client-hub': typeof ClientHubRoute
   '/customers': typeof CustomersRouteWithChildren
   '/equipment': typeof EquipmentRoute
+  '/expenses': typeof ExpensesRoute
   '/import-customers': typeof ImportCustomersRouteWithChildren
   '/installations': typeof InstallationsRoute
+  '/invoices': typeof InvoicesRoute
+  '/job-forms': typeof JobFormsRoute
   '/jobs-pipeline': typeof JobsPipelineRoute
   '/leads': typeof LeadsRoute
   '/maintenance': typeof MaintenanceRoute
   '/map': typeof MapRoute
+  '/marketing': typeof MarketingRoute
+  '/messages': typeof MessagesRoute
+  '/payments': typeof PaymentsRoute
+  '/quotes': typeof QuotesRoute
+  '/receptionist': typeof ReceptionistRoute
+  '/refer-and-earn': typeof ReferAndEarnRoute
   '/reports': typeof ReportsRoute
+  '/requests': typeof RequestsRoute
   '/sales-pipeline': typeof SalesPipelineRoute
   '/settings': typeof SettingsRoute
   '/supply-orders': typeof SupplyOrdersRoute
   '/tasks': typeof TasksRoute
   '/team': typeof TeamRoute
+  '/timesheets': typeof TimesheetsRoute
   '/customers/$id': typeof CustomersIdRoute
   '/import-customers/csv': typeof ImportCustomersCsvRoute
   '/import-customers/manual': typeof ImportCustomersManualRoute
@@ -187,20 +278,33 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/automations': typeof AutomationsRoute
   '/calendar': typeof CalendarRoute
+  '/chemicals': typeof ChemicalsRoute
+  '/client-hub': typeof ClientHubRoute
   '/customers': typeof CustomersRouteWithChildren
   '/equipment': typeof EquipmentRoute
+  '/expenses': typeof ExpensesRoute
   '/import-customers': typeof ImportCustomersRouteWithChildren
   '/installations': typeof InstallationsRoute
+  '/invoices': typeof InvoicesRoute
+  '/job-forms': typeof JobFormsRoute
   '/jobs-pipeline': typeof JobsPipelineRoute
   '/leads': typeof LeadsRoute
   '/maintenance': typeof MaintenanceRoute
   '/map': typeof MapRoute
+  '/marketing': typeof MarketingRoute
+  '/messages': typeof MessagesRoute
+  '/payments': typeof PaymentsRoute
+  '/quotes': typeof QuotesRoute
+  '/receptionist': typeof ReceptionistRoute
+  '/refer-and-earn': typeof ReferAndEarnRoute
   '/reports': typeof ReportsRoute
+  '/requests': typeof RequestsRoute
   '/sales-pipeline': typeof SalesPipelineRoute
   '/settings': typeof SettingsRoute
   '/supply-orders': typeof SupplyOrdersRoute
   '/tasks': typeof TasksRoute
   '/team': typeof TeamRoute
+  '/timesheets': typeof TimesheetsRoute
   '/customers/$id': typeof CustomersIdRoute
   '/import-customers/csv': typeof ImportCustomersCsvRoute
   '/import-customers/manual': typeof ImportCustomersManualRoute
@@ -214,20 +318,33 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/automations': typeof AutomationsRoute
   '/calendar': typeof CalendarRoute
+  '/chemicals': typeof ChemicalsRoute
+  '/client-hub': typeof ClientHubRoute
   '/customers': typeof CustomersRouteWithChildren
   '/equipment': typeof EquipmentRoute
+  '/expenses': typeof ExpensesRoute
   '/import-customers': typeof ImportCustomersRouteWithChildren
   '/installations': typeof InstallationsRoute
+  '/invoices': typeof InvoicesRoute
+  '/job-forms': typeof JobFormsRoute
   '/jobs-pipeline': typeof JobsPipelineRoute
   '/leads': typeof LeadsRoute
   '/maintenance': typeof MaintenanceRoute
   '/map': typeof MapRoute
+  '/marketing': typeof MarketingRoute
+  '/messages': typeof MessagesRoute
+  '/payments': typeof PaymentsRoute
+  '/quotes': typeof QuotesRoute
+  '/receptionist': typeof ReceptionistRoute
+  '/refer-and-earn': typeof ReferAndEarnRoute
   '/reports': typeof ReportsRoute
+  '/requests': typeof RequestsRoute
   '/sales-pipeline': typeof SalesPipelineRoute
   '/settings': typeof SettingsRoute
   '/supply-orders': typeof SupplyOrdersRoute
   '/tasks': typeof TasksRoute
   '/team': typeof TeamRoute
+  '/timesheets': typeof TimesheetsRoute
   '/customers/$id': typeof CustomersIdRoute
   '/import-customers/csv': typeof ImportCustomersCsvRoute
   '/import-customers/manual': typeof ImportCustomersManualRoute
@@ -242,20 +359,33 @@ export interface FileRouteTypes {
     | '/auth'
     | '/automations'
     | '/calendar'
+    | '/chemicals'
+    | '/client-hub'
     | '/customers'
     | '/equipment'
+    | '/expenses'
     | '/import-customers'
     | '/installations'
+    | '/invoices'
+    | '/job-forms'
     | '/jobs-pipeline'
     | '/leads'
     | '/maintenance'
     | '/map'
+    | '/marketing'
+    | '/messages'
+    | '/payments'
+    | '/quotes'
+    | '/receptionist'
+    | '/refer-and-earn'
     | '/reports'
+    | '/requests'
     | '/sales-pipeline'
     | '/settings'
     | '/supply-orders'
     | '/tasks'
     | '/team'
+    | '/timesheets'
     | '/customers/$id'
     | '/import-customers/csv'
     | '/import-customers/manual'
@@ -268,20 +398,33 @@ export interface FileRouteTypes {
     | '/auth'
     | '/automations'
     | '/calendar'
+    | '/chemicals'
+    | '/client-hub'
     | '/customers'
     | '/equipment'
+    | '/expenses'
     | '/import-customers'
     | '/installations'
+    | '/invoices'
+    | '/job-forms'
     | '/jobs-pipeline'
     | '/leads'
     | '/maintenance'
     | '/map'
+    | '/marketing'
+    | '/messages'
+    | '/payments'
+    | '/quotes'
+    | '/receptionist'
+    | '/refer-and-earn'
     | '/reports'
+    | '/requests'
     | '/sales-pipeline'
     | '/settings'
     | '/supply-orders'
     | '/tasks'
     | '/team'
+    | '/timesheets'
     | '/customers/$id'
     | '/import-customers/csv'
     | '/import-customers/manual'
@@ -294,20 +437,33 @@ export interface FileRouteTypes {
     | '/auth'
     | '/automations'
     | '/calendar'
+    | '/chemicals'
+    | '/client-hub'
     | '/customers'
     | '/equipment'
+    | '/expenses'
     | '/import-customers'
     | '/installations'
+    | '/invoices'
+    | '/job-forms'
     | '/jobs-pipeline'
     | '/leads'
     | '/maintenance'
     | '/map'
+    | '/marketing'
+    | '/messages'
+    | '/payments'
+    | '/quotes'
+    | '/receptionist'
+    | '/refer-and-earn'
     | '/reports'
+    | '/requests'
     | '/sales-pipeline'
     | '/settings'
     | '/supply-orders'
     | '/tasks'
     | '/team'
+    | '/timesheets'
     | '/customers/$id'
     | '/import-customers/csv'
     | '/import-customers/manual'
@@ -321,26 +477,46 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   AutomationsRoute: typeof AutomationsRoute
   CalendarRoute: typeof CalendarRoute
+  ChemicalsRoute: typeof ChemicalsRoute
+  ClientHubRoute: typeof ClientHubRoute
   CustomersRoute: typeof CustomersRouteWithChildren
   EquipmentRoute: typeof EquipmentRoute
+  ExpensesRoute: typeof ExpensesRoute
   ImportCustomersRoute: typeof ImportCustomersRouteWithChildren
   InstallationsRoute: typeof InstallationsRoute
+  InvoicesRoute: typeof InvoicesRoute
+  JobFormsRoute: typeof JobFormsRoute
   JobsPipelineRoute: typeof JobsPipelineRoute
   LeadsRoute: typeof LeadsRoute
   MaintenanceRoute: typeof MaintenanceRoute
   MapRoute: typeof MapRoute
+  MarketingRoute: typeof MarketingRoute
+  MessagesRoute: typeof MessagesRoute
+  PaymentsRoute: typeof PaymentsRoute
+  QuotesRoute: typeof QuotesRoute
+  ReceptionistRoute: typeof ReceptionistRoute
+  ReferAndEarnRoute: typeof ReferAndEarnRoute
   ReportsRoute: typeof ReportsRoute
+  RequestsRoute: typeof RequestsRoute
   SalesPipelineRoute: typeof SalesPipelineRoute
   SettingsRoute: typeof SettingsRoute
   SupplyOrdersRoute: typeof SupplyOrdersRoute
   TasksRoute: typeof TasksRoute
   TeamRoute: typeof TeamRoute
+  TimesheetsRoute: typeof TimesheetsRoute
   TechnicianIndexRoute: typeof TechnicianIndexRoute
   TechnicianJobIdRoute: typeof TechnicianJobIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/timesheets': {
+      id: '/timesheets'
+      path: '/timesheets'
+      fullPath: '/timesheets'
+      preLoaderRoute: typeof TimesheetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/team': {
       id: '/team'
       path: '/team'
@@ -376,11 +552,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SalesPipelineRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/requests': {
+      id: '/requests'
+      path: '/requests'
+      fullPath: '/requests'
+      preLoaderRoute: typeof RequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reports': {
       id: '/reports'
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refer-and-earn': {
+      id: '/refer-and-earn'
+      path: '/refer-and-earn'
+      fullPath: '/refer-and-earn'
+      preLoaderRoute: typeof ReferAndEarnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/receptionist': {
+      id: '/receptionist'
+      path: '/receptionist'
+      fullPath: '/receptionist'
+      preLoaderRoute: typeof ReceptionistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quotes': {
+      id: '/quotes'
+      path: '/quotes'
+      fullPath: '/quotes'
+      preLoaderRoute: typeof QuotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payments': {
+      id: '/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof PaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/marketing': {
+      id: '/marketing'
+      path: '/marketing'
+      fullPath: '/marketing'
+      preLoaderRoute: typeof MarketingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/map': {
@@ -411,6 +636,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JobsPipelineRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/job-forms': {
+      id: '/job-forms'
+      path: '/job-forms'
+      fullPath: '/job-forms'
+      preLoaderRoute: typeof JobFormsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invoices': {
+      id: '/invoices'
+      path: '/invoices'
+      fullPath: '/invoices'
+      preLoaderRoute: typeof InvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/installations': {
       id: '/installations'
       path: '/installations'
@@ -425,6 +664,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImportCustomersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/expenses': {
+      id: '/expenses'
+      path: '/expenses'
+      fullPath: '/expenses'
+      preLoaderRoute: typeof ExpensesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/equipment': {
       id: '/equipment'
       path: '/equipment'
@@ -437,6 +683,20 @@ declare module '@tanstack/react-router' {
       path: '/customers'
       fullPath: '/customers'
       preLoaderRoute: typeof CustomersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client-hub': {
+      id: '/client-hub'
+      path: '/client-hub'
+      fullPath: '/client-hub'
+      preLoaderRoute: typeof ClientHubRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chemicals': {
+      id: '/chemicals'
+      path: '/chemicals'
+      fullPath: '/chemicals'
+      preLoaderRoute: typeof ChemicalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/calendar': {
@@ -544,20 +804,33 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   AutomationsRoute: AutomationsRoute,
   CalendarRoute: CalendarRoute,
+  ChemicalsRoute: ChemicalsRoute,
+  ClientHubRoute: ClientHubRoute,
   CustomersRoute: CustomersRouteWithChildren,
   EquipmentRoute: EquipmentRoute,
+  ExpensesRoute: ExpensesRoute,
   ImportCustomersRoute: ImportCustomersRouteWithChildren,
   InstallationsRoute: InstallationsRoute,
+  InvoicesRoute: InvoicesRoute,
+  JobFormsRoute: JobFormsRoute,
   JobsPipelineRoute: JobsPipelineRoute,
   LeadsRoute: LeadsRoute,
   MaintenanceRoute: MaintenanceRoute,
   MapRoute: MapRoute,
+  MarketingRoute: MarketingRoute,
+  MessagesRoute: MessagesRoute,
+  PaymentsRoute: PaymentsRoute,
+  QuotesRoute: QuotesRoute,
+  ReceptionistRoute: ReceptionistRoute,
+  ReferAndEarnRoute: ReferAndEarnRoute,
   ReportsRoute: ReportsRoute,
+  RequestsRoute: RequestsRoute,
   SalesPipelineRoute: SalesPipelineRoute,
   SettingsRoute: SettingsRoute,
   SupplyOrdersRoute: SupplyOrdersRoute,
   TasksRoute: TasksRoute,
   TeamRoute: TeamRoute,
+  TimesheetsRoute: TimesheetsRoute,
   TechnicianIndexRoute: TechnicianIndexRoute,
   TechnicianJobIdRoute: TechnicianJobIdRoute,
 }
