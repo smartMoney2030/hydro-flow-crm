@@ -21,6 +21,7 @@ import type {
   SupplyOrder,
   Task,
   User,
+  InventoryItem,
 } from "@/data/types";
 import { addYear, findDuplicates, geocode, type DuplicateMatch } from "@/lib/import";
 import {
@@ -58,6 +59,21 @@ interface CRMState {
   automationRules: AutomationRule[];
   automationRuns: AutomationRun[];
   importBatches: ImportBatch[];
+  inventory: InventoryItem[];
+
+  addInventoryItem: (item: Omit<InventoryItem, "id" | "updatedAt">) => InventoryItem;
+  updateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
+  removeInventoryItem: (id: string) => void;
+  adjustInventory: (id: string, delta: number, reason?: string) => void;
+  createSupplyOrder: (input: {
+    vendor: string;
+    jobId?: string;
+    expectedDelivery: string;
+    tracking?: string;
+    notes?: string;
+    lineItems: { name: string; qty: number; inventoryId?: string }[];
+  }) => SupplyOrder;
+  receiveSupplyOrder: (id: string) => void;
 
   setRole: (r: Role) => void;
   setLeadStatus: (id: string, s: LeadStatus) => void;
@@ -148,6 +164,61 @@ export const useCRM = create<CRMState>((set, get) => ({
   automationRules: seedRules,
   automationRuns: [],
   importBatches: [],
+  inventory: [],
+
+  addInventoryItem: (item) => {
+    const it: InventoryItem = { id: uid("inv"), updatedAt: new Date().toISOString(), ...item };
+    set((s) => ({ inventory: [it, ...s.inventory] }));
+    get().addAudit({ actorId: get().currentUserId, action: "created", entity: "Inventory", entityId: it.id, detail: `${it.sku} ${it.name} qty ${it.onHand}` });
+    return it;
+  },
+  updateInventoryItem: (id, patch) => {
+    set((s) => ({ inventory: s.inventory.map((i) => (i.id === id ? { ...i, ...patch, updatedAt: new Date().toISOString() } : i)) }));
+    get().addAudit({ actorId: get().currentUserId, action: "updated", entity: "Inventory", entityId: id, detail: "Inventory item edited" });
+  },
+  removeInventoryItem: (id) => {
+    set((s) => ({ inventory: s.inventory.filter((i) => i.id !== id) }));
+    get().addAudit({ actorId: get().currentUserId, action: "deleted", entity: "Inventory", entityId: id });
+  },
+  adjustInventory: (id, delta, reason) => {
+    set((s) => ({
+      inventory: s.inventory.map((i) =>
+        i.id === id ? { ...i, onHand: Math.max(0, i.onHand + delta), updatedAt: new Date().toISOString() } : i
+      ),
+    }));
+    get().addAudit({ actorId: get().currentUserId, action: "adjusted", entity: "Inventory", entityId: id, detail: `${delta > 0 ? "+" : ""}${delta}${reason ? ` (${reason})` : ""}` });
+  },
+  createSupplyOrder: (input) => {
+    const order: SupplyOrder = {
+      id: uid("so"),
+      jobId: input.jobId || "",
+      vendor: input.vendor,
+      lineItems: input.lineItems.map(({ name, qty }) => ({ name, qty })),
+      orderDate: new Date().toISOString(),
+      expectedDelivery: input.expectedDelivery,
+      tracking: input.tracking,
+      status: "Ordered",
+      notes: input.notes || "",
+    };
+    set((s) => ({ supplyOrders: [order, ...s.supplyOrders] }));
+    // Track pending receipts against inventory (metadata via notes; stock is added on receive)
+    get().addAudit({ actorId: get().currentUserId, action: "created", entity: "SupplyOrder", entityId: order.id, detail: `${order.vendor} · ${order.lineItems.length} items` });
+    return order;
+  },
+  receiveSupplyOrder: (id) => {
+    const order = get().supplyOrders.find((o) => o.id === id);
+    if (!order) return;
+    set((s) => ({
+      supplyOrders: s.supplyOrders.map((o) =>
+        o.id === id ? { ...o, status: "Delivered", actualDelivery: new Date().toISOString() } : o
+      ),
+      inventory: s.inventory.map((i) => {
+        const li = order.lineItems.find((l) => l.name.toLowerCase() === i.name.toLowerCase() || l.name.toLowerCase() === i.sku.toLowerCase());
+        return li ? { ...i, onHand: i.onHand + li.qty, updatedAt: new Date().toISOString() } : i;
+      }),
+    }));
+    get().addAudit({ actorId: get().currentUserId, action: "received", entity: "SupplyOrder", entityId: id, detail: `Stock incremented` });
+  },
 
   findDuplicateCustomers: (candidate) => findDuplicates(candidate, get().customers),
 
