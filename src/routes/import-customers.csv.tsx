@@ -216,11 +216,12 @@ function CsvWizard() {
     setPreviews((p) => p.map((row) => (row.duplicateId ? { ...row, resolution: res } : row)));
 
   const runImport = async () => {
-    let created = 0, updated = 0, skipped = 0, failed = 0;
+    let created = 0, updated = 0, skipped = 0, failed = 0, leadsCreated = 0;
     const customerIds: string[] = [];
     const equipmentIds: string[] = [];
     const maintenanceIds: string[] = [];
     const eventIds: string[] = [];
+    const leadIds: string[] = [];
     const saveErrs: ImportError[] = [];
     const CHUNK = 100;
 
@@ -253,11 +254,12 @@ function CsvWizard() {
           });
           updated++;
         } else {
-          const r = addExisting(p.input);
+          const r = addExisting(p.input, { createLead: alsoCreateLeads });
           customerIds.push(r.customer.id);
           equipmentIds.push(...r.equipmentIds);
           maintenanceIds.push(...r.maintenanceIds);
           eventIds.push(...r.eventIds);
+          if (r.leadId) { leadIds.push(r.leadId); leadsCreated++; }
           created++;
         }
       } catch (e) {
@@ -279,13 +281,14 @@ function CsvWizard() {
       equipmentIds,
       maintenanceIds,
       eventIds,
+      leadIds,
     });
     setErrors((prev) => [...prev, ...saveErrs]);
-    setReport({ created, updated, skipped, failed, batchId: batch.id });
+    setReport({ created, updated, skipped, failed, leads: leadsCreated, batchId: batch.id });
     setProgress(null);
     setStep(4);
     if (failed > 0) toast.error(`Imported ${created} · ${failed} failed — see error list below`);
-    else toast.success(`Imported ${created} customer${created === 1 ? "" : "s"}`);
+    else toast.success(`Imported ${created} customer${created === 1 ? "" : "s"}${leadsCreated ? ` · ${leadsCreated} lead${leadsCreated === 1 ? "" : "s"}` : ""}`);
   };
 
 
