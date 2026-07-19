@@ -21,6 +21,7 @@ import type {
   SupplyOrder,
   Task,
   User,
+  InventoryItem,
 } from "@/data/types";
 import { addYear, findDuplicates, geocode, type DuplicateMatch } from "@/lib/import";
 import {
