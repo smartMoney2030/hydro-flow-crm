@@ -59,6 +59,21 @@ interface CRMState {
   automationRules: AutomationRule[];
   automationRuns: AutomationRun[];
   importBatches: ImportBatch[];
+  inventory: InventoryItem[];
+
+  addInventoryItem: (item: Omit<InventoryItem, "id" | "updatedAt">) => InventoryItem;
+  updateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
+  removeInventoryItem: (id: string) => void;
+  adjustInventory: (id: string, delta: number, reason?: string) => void;
+  createSupplyOrder: (input: {
+    vendor: string;
+    jobId?: string;
+    expectedDelivery: string;
+    tracking?: string;
+    notes?: string;
+    lineItems: { name: string; qty: number; inventoryId?: string }[];
+  }) => SupplyOrder;
+  receiveSupplyOrder: (id: string) => void;
 
   setRole: (r: Role) => void;
   setLeadStatus: (id: string, s: LeadStatus) => void;
