@@ -134,7 +134,7 @@ function SupplyOrdersPage() {
       </Section>
 
       {inventory.length > 0 && (
-        <Section title="Inventory">
+        <Section><h2 className="text-sm font-semibold mb-2">Inventory</h2>
           <Card>
             <CardContent className="p-0">
               <Table>
@@ -190,7 +190,7 @@ function SupplyOrdersPage() {
         </Section>
       )}
 
-      <Section title="Purchase orders">
+      <Section><h2 className="text-sm font-semibold mb-2">Purchase orders</h2>
         {s.supplyOrders.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center text-sm text-muted-foreground">
