@@ -37,7 +37,7 @@ function ImportLanding() {
                   Enter one customer with their equipment, purchase, and maintenance history. Choose their current
                   stage — they don't need to start as a new lead.
                 </p>
-                <Button variant="outline" size="sm">Start manual entry →</Button>
+                <Button variant="outline" size="sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate({ to: "/import-customers/manual" }); }}>Start manual entry →</Button>
               </CardContent>
             </Card>
           </Link>
