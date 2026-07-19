@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Play, Square } from "lucide-react";
+import { useCRM } from "@/store/crm";
 
 type Entry = { id: string; tech: string; date: string; clockIn: string; clockOut: string | null; hours: number; job?: string; approved: boolean };
 
@@ -16,19 +17,52 @@ const seed: Entry[] = [
   { id: "t3", tech: "Ricky Alvarez", date: "2026-07-17", clockIn: "07:48", clockOut: "16:12", hours: 8.40, approved: true },
 ];
 
+const pad = (n: number) => n.toString().padStart(2, "0");
+const hhmm = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const ymd = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
 export const Route = createFileRoute("/timesheets")({ component: TimesheetsPage });
 
 function TimesheetsPage() {
+  const currentUserId = useCRM((s) => s.currentUserId);
+  const users = useCRM((s) => s.users);
+  const currentUser = users.find((u) => u.id === currentUserId);
+  const currentName = currentUser?.name ?? "You";
+
   const [rows, setRows] = useState(seed);
-  const [running, setRunning] = useState<{ start: number } | null>(null);
-  const pending = rows.filter(r => !r.approved);
-  const totalHrs = rows.reduce((s, r) => s + r.hours, 0);
+  const [sessions, setSessions] = useState<Record<string, { start: number }>>({});
+  const running = sessions[currentUserId] ?? null;
+
+  const pending = rows.filter((r) => !r.approved);
+  const totalHrs = useMemo(() => rows.reduce((s, r) => s + r.hours, 0), [rows]);
+
+  const clockIn = () => {
+    setSessions((s) => ({ ...s, [currentUserId]: { start: Date.now() } }));
+    toast.success(`${currentName} clocked in`);
+  };
+  const clockOut = () => {
+    if (!running) return;
+    const startD = new Date(running.start);
+    const endD = new Date();
+    const hours = (endD.getTime() - startD.getTime()) / 3600000;
+    setRows((x) => [
+      { id: `t${Date.now()}`, tech: currentName, date: ymd(endD), clockIn: hhmm(startD), clockOut: hhmm(endD), hours: Math.max(hours, 0.01), approved: false },
+      ...x,
+    ]);
+    setSessions((s) => {
+      const next = { ...s };
+      delete next[currentUserId];
+      return next;
+    });
+    toast.success(`${currentName} clocked out (${(hours * 60).toFixed(0)}m)`);
+  };
+
   return (
     <>
-      <PageHeader eyebrow="Payroll" title="Timesheets" description="Clock in/out, approve, and confirm payroll" actions={
+      <PageHeader eyebrow="Payroll" title="Timesheets" description={`Clock in/out, approve, and confirm payroll · ${currentName} (${currentUser?.role ?? "—"})`} actions={
         running
-          ? <Button size="sm" variant="destructive" onClick={() => { const mins = (Date.now() - running.start) / 60000; setRunning(null); toast.success(`Clocked out (${mins.toFixed(0)}m)`); }}><Square className="h-3 w-3 mr-1" />Clock out</Button>
-          : <Button size="sm" onClick={() => { setRunning({ start: Date.now() }); toast.success("Clocked in"); }}><Play className="h-3 w-3 mr-1" />Clock in</Button>
+          ? <Button size="sm" variant="destructive" onClick={clockOut}><Square className="h-3 w-3 mr-1" />Clock out</Button>
+          : <Button size="sm" onClick={clockIn}><Play className="h-3 w-3 mr-1" />Clock in</Button>
       } />
       <Section className="space-y-4">
         <div className="grid sm:grid-cols-3 gap-3">
