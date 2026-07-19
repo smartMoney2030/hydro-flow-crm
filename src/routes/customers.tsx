@@ -22,10 +22,7 @@ function Customers() {
         title="Customers"
         description={`${customers.length} customers`}
         actions={
-          <>
-            <Link to="/import-customers"><Button variant="outline">Import existing</Button></Link>
-            <Button className="bg-primary">+ Add customer</Button>
-          </>
+          <Link to="/import-customers"><Button className="bg-primary">+ Add customer</Button></Link>
         }
       />
       <Section className="space-y-4">
