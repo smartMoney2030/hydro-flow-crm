@@ -35,5 +35,9 @@ const tones: Record<string, string> = {
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
   const tone = tones[status] || "bg-muted text-muted-foreground border-border";
-  return <Badge variant="outline" className={cn("font-medium", tone, className)}>{status}</Badge>;
+  return (
+    <Badge variant="outline" className={cn("font-medium", tone, className)}>
+      {status}
+    </Badge>
+  );
 }

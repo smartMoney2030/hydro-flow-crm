@@ -37,7 +37,10 @@ export function TopBar() {
     <header className="sticky top-0 z-20 h-14 lg:h-16 bg-background/85 backdrop-blur border-b border-border flex items-center gap-3 px-4 lg:px-6">
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Search customers, jobs, invoices..." className="pl-8 h-9 bg-muted/50 border-transparent focus-visible:bg-background" />
+        <Input
+          placeholder="Search customers, jobs, invoices..."
+          className="pl-8 h-9 bg-muted/50 border-transparent focus-visible:bg-background"
+        />
       </div>
 
       <DropdownMenu>
@@ -76,7 +79,9 @@ export function TopBar() {
         <DropdownMenuContent align="end" className="w-80">
           <div className="flex items-center justify-between px-2 py-1.5">
             <DropdownMenuLabel className="p-0">Notifications</DropdownMenuLabel>
-            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={markAll}>Mark all read</Button>
+            <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={markAll}>
+              Mark all read
+            </Button>
           </div>
           <DropdownMenuSeparator />
           <div className="max-h-80 overflow-y-auto">
@@ -84,7 +89,10 @@ export function TopBar() {
               <DropdownMenuItem key={n.id} asChild className="flex-col items-start gap-0.5 py-2">
                 <Link to={n.href || "/"}>
                   <div className="flex items-center gap-2 w-full">
-                    <Badge variant={n.kind === "warning" ? "destructive" : "secondary"} className="text-[10px]">
+                    <Badge
+                      variant={n.kind === "warning" ? "destructive" : "secondary"}
+                      className="text-[10px]"
+                    >
                       {n.kind}
                     </Badge>
                     <span className="font-medium text-sm truncate">{n.title}</span>
@@ -98,7 +106,10 @@ export function TopBar() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <div className="h-9 w-9 rounded-full grid place-items-center text-xs font-semibold text-white" style={{ backgroundColor: me.avatarColor }}>
+      <div
+        className="h-9 w-9 rounded-full grid place-items-center text-xs font-semibold text-white"
+        style={{ backgroundColor: me.avatarColor }}
+      >
         {initials(me.name)}
       </div>
     </header>

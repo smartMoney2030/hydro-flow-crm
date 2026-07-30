@@ -19,7 +19,9 @@ export function StatCard({
   tone?: "default" | "success" | "warning" | "danger" | "info";
   to?: string;
 }) {
-  const Icon = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[icon] || Icons.Activity;
+  const Icon =
+    (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[icon] ||
+    Icons.Activity;
   const toneClasses = {
     default: "bg-primary/10 text-primary",
     success: "bg-success/15 text-success",
@@ -32,7 +34,9 @@ export function StatCard({
     <CardContent className="p-4 lg:p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {label}
+          </div>
           <div className="mt-1 text-2xl lg:text-3xl font-bold text-foreground">{value}</div>
           {hint && <div className="mt-1 text-xs text-muted-foreground">{hint}</div>}
         </div>
@@ -43,6 +47,10 @@ export function StatCard({
     </CardContent>
   );
 
-  const card = <Card className={cn("shadow-card hover:shadow-wave transition-shadow", to && "cursor-pointer")}>{inner}</Card>;
+  const card = (
+    <Card className={cn("shadow-card hover:shadow-wave transition-shadow", to && "cursor-pointer")}>
+      {inner}
+    </Card>
+  );
   return to ? <Link to={to}>{card}</Link> : card;
 }

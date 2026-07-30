@@ -5,7 +5,19 @@ import { useCRM } from "@/store/crm";
 import { money, shortDate } from "@/lib/format";
 import type { JobStatus } from "@/data/types";
 
-const COLS: JobStatus[] = ["Payment Pending", "Deposit Collected", "Supplies Need Ordering", "Supplies Ordered", "Awaiting Delivery", "Ready to Schedule", "Installation Scheduled", "Installation in Progress", "Installation Completed", "Follow-Up Required", "Job Closed"];
+const COLS: JobStatus[] = [
+  "Payment Pending",
+  "Deposit Collected",
+  "Supplies Need Ordering",
+  "Supplies Ordered",
+  "Awaiting Delivery",
+  "Ready to Schedule",
+  "Installation Scheduled",
+  "Installation in Progress",
+  "Installation Completed",
+  "Follow-Up Required",
+  "Job Closed",
+];
 
 export const Route = createFileRoute("/jobs-pipeline")({ component: JobsPipeline });
 
@@ -17,7 +29,11 @@ function JobsPipeline() {
 
   return (
     <>
-      <PageHeader eyebrow="Fulfillment" title="Jobs Pipeline" description="Deposit → supplies → schedule → install → close." />
+      <PageHeader
+        eyebrow="Fulfillment"
+        title="Jobs Pipeline"
+        description="Deposit → supplies → schedule → install → close."
+      />
       <Section>
         <KanbanBoard
           columns={COLS as unknown as string[]}
@@ -28,8 +44,12 @@ function JobsPipeline() {
             return (
               <Link to="/customers/$id" params={{ id: c.id }} className="block p-3 space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="font-medium text-sm truncate">{c.firstName} {c.lastName}</div>
-                  <span className="text-[10px] text-muted-foreground shrink-0">{j.invoiceNumber}</span>
+                  <div className="font-medium text-sm truncate">
+                    {c.firstName} {c.lastName}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground shrink-0">
+                    {j.invoiceNumber}
+                  </span>
                 </div>
                 <div className="text-xs text-muted-foreground truncate">{j.systemType}</div>
                 <div className="flex items-center justify-between pt-1">

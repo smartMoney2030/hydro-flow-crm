@@ -62,7 +62,9 @@ function SupplyOrdersPage() {
     () =>
       inventory
         .slice()
-        .sort((a, b) => a.onHand / Math.max(1, a.reorderLevel) - b.onHand / Math.max(1, b.reorderLevel))
+        .sort(
+          (a, b) => a.onHand / Math.max(1, a.reorderLevel) - b.onHand / Math.max(1, b.reorderLevel),
+        )
         .map((i) => ({
           name: i.name.length > 18 ? i.name.slice(0, 16) + "…" : i.name,
           sku: i.sku,
@@ -70,7 +72,7 @@ function SupplyOrdersPage() {
           reorder: i.reorderLevel,
           low: i.onHand <= i.reorderLevel,
         })),
-    [inventory]
+    [inventory],
   );
 
   return (
@@ -89,9 +91,22 @@ function SupplyOrdersPage() {
 
       <Section>
         <div className="grid gap-4 md:grid-cols-3">
-          <StatCard icon={<Package className="h-4 w-4" />} label="SKUs tracked" value={inventory.length} />
-          <StatCard icon={<PackageCheck className="h-4 w-4" />} label="Units on hand" value={totalUnits} />
-          <StatCard icon={<ShoppingCart className="h-4 w-4" />} label="Low / reorder" value={lowStock} tone={lowStock > 0 ? "warn" : "ok"} />
+          <StatCard
+            icon={<Package className="h-4 w-4" />}
+            label="SKUs tracked"
+            value={inventory.length}
+          />
+          <StatCard
+            icon={<PackageCheck className="h-4 w-4" />}
+            label="Units on hand"
+            value={totalUnits}
+          />
+          <StatCard
+            icon={<ShoppingCart className="h-4 w-4" />}
+            label="Low / reorder"
+            value={lowStock}
+            tone={lowStock > 0 ? "warn" : "ok"}
+          />
         </div>
       </Section>
 
@@ -103,17 +118,28 @@ function SupplyOrdersPage() {
           <CardContent>
             {chartData.length === 0 ? (
               <div className="py-10 text-center text-sm text-muted-foreground">
-                No inventory yet. Click <span className="font-medium">Add inventory</span> to log what you already have on the shelf.
+                No inventory yet. Click <span className="font-medium">Add inventory</span> to log
+                what you already have on the shelf.
               </div>
             ) : (
               <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 8, right: 12, bottom: 8, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={60} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 11 }}
+                      interval={0}
+                      angle={-20}
+                      textAnchor="end"
+                      height={60}
+                    />
                     <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                     <ReTooltip
-                      formatter={(v: number, k: string) => [v, k === "onHand" ? "On hand" : "Reorder at"]}
+                      formatter={(v: number, k: string) => [
+                        v,
+                        k === "onHand" ? "On hand" : "Reorder at",
+                      ]}
                       labelFormatter={(l, p) => {
                         const row = p?.[0]?.payload as { sku: string } | undefined;
                         return row ? `${l} · ${row.sku}` : String(l);
@@ -121,7 +147,10 @@ function SupplyOrdersPage() {
                     />
                     <Bar dataKey="onHand" radius={[4, 4, 0, 0]}>
                       {chartData.map((d, i) => (
-                        <Cell key={i} fill={d.low ? "hsl(var(--destructive))" : "hsl(var(--primary))"} />
+                        <Cell
+                          key={i}
+                          fill={d.low ? "hsl(var(--destructive))" : "hsl(var(--primary))"}
+                        />
                       ))}
                     </Bar>
                     <ReferenceLine y={0} stroke="hsl(var(--border))" />
@@ -134,7 +163,8 @@ function SupplyOrdersPage() {
       </Section>
 
       {inventory.length > 0 && (
-        <Section><h2 className="text-sm font-semibold mb-2">Inventory</h2>
+        <Section>
+          <h2 className="text-sm font-semibold mb-2">Inventory</h2>
           <Card>
             <CardContent className="p-0">
               <Table>
@@ -157,27 +187,50 @@ function SupplyOrdersPage() {
                       <TableCell className="font-medium">{i.name}</TableCell>
                       <TableCell className="text-muted-foreground">{i.category}</TableCell>
                       <TableCell className="text-right">
-                        <span className={i.onHand <= i.reorderLevel ? "text-destructive font-semibold" : ""}>
+                        <span
+                          className={
+                            i.onHand <= i.reorderLevel ? "text-destructive font-semibold" : ""
+                          }
+                        >
                           {i.onHand} {i.unit}
                         </span>
                         {i.onHand <= i.reorderLevel && (
-                          <Badge variant="destructive" className="ml-2">Low</Badge>
+                          <Badge variant="destructive" className="ml-2">
+                            Low
+                          </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-right text-muted-foreground">{i.reorderLevel}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {i.reorderLevel}
+                      </TableCell>
                       <TableCell className="text-muted-foreground">{i.vendor || "—"}</TableCell>
                       <TableCell className="text-right">
                         <div className="inline-flex items-center gap-1">
-                          <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => s.adjustInventory(i.id, -1, "manual")}>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-7 w-7"
+                            onClick={() => s.adjustInventory(i.id, -1, "manual")}
+                          >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => s.adjustInventory(i.id, 1, "manual")}>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-7 w-7"
+                            onClick={() => s.adjustInventory(i.id, 1, "manual")}
+                          >
                             <Plus className="h-3 w-3" />
                           </Button>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => s.removeInventoryItem(i.id)}>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                          onClick={() => s.removeInventoryItem(i.id)}
+                        >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </TableCell>
@@ -190,11 +243,13 @@ function SupplyOrdersPage() {
         </Section>
       )}
 
-      <Section><h2 className="text-sm font-semibold mb-2">Purchase orders</h2>
+      <Section>
+        <h2 className="text-sm font-semibold mb-2">Purchase orders</h2>
         {s.supplyOrders.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center text-sm text-muted-foreground">
-              No supply orders yet. Use <span className="font-medium">Create supply order</span> to place one — received items add to inventory automatically.
+              No supply orders yet. Use <span className="font-medium">Create supply order</span> to
+              place one — received items add to inventory automatically.
             </CardContent>
           </Card>
         ) : (
@@ -202,13 +257,16 @@ function SupplyOrdersPage() {
             {s.supplyOrders.map((o) => {
               const j = o.jobId ? s.jobs.find((x) => x.id === o.jobId) : undefined;
               const c = j ? s.customers.find((x) => x.id === j.customerId) : undefined;
-              const label = c ? `${c.firstName} ${c.lastName} · ${j!.invoiceNumber}` : `Stock replenishment · ${o.vendor}`;
+              const label = c
+                ? `${c.firstName} ${c.lastName} · ${j!.invoiceNumber}`
+                : `Stock replenishment · ${o.vendor}`;
               const inner = (
                 <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] items-center gap-3">
                   <div className="min-w-0">
                     <div className="font-medium truncate">{label}</div>
                     <div className="text-xs text-muted-foreground truncate">
-                      {o.vendor} · {o.lineItems.length} items{o.tracking ? ` · tracking ${o.tracking}` : ""}
+                      {o.vendor} · {o.lineItems.length} items
+                      {o.tracking ? ` · tracking ${o.tracking}` : ""}
                     </div>
                   </div>
                   <div className="text-xs">Ordered {shortDate(o.orderDate)}</div>
@@ -218,8 +276,8 @@ function SupplyOrdersPage() {
                       o.status === "In Transit"
                         ? "Awaiting Delivery"
                         : o.status === "Ordered"
-                        ? "Supplies Ordered"
-                        : "Installation Completed"
+                          ? "Supplies Ordered"
+                          : "Installation Completed"
                     }
                   />
                   {o.status !== "Delivered" && (
@@ -242,7 +300,9 @@ function SupplyOrdersPage() {
                 <Card key={o.id} className="shadow-sm hover:shadow-card">
                   <CardContent className="p-4">
                     {c ? (
-                      <Link to="/customers/$id" params={{ id: c.id }}>{inner}</Link>
+                      <Link to="/customers/$id" params={{ id: c.id }}>
+                        {inner}
+                      </Link>
                     ) : (
                       inner
                     )}
@@ -257,11 +317,23 @@ function SupplyOrdersPage() {
   );
 }
 
-function StatCard({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: number; tone?: "ok" | "warn" }) {
+function StatCard({
+  icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+  tone?: "ok" | "warn";
+}) {
   return (
     <Card>
       <CardContent className="p-4 flex items-center gap-3">
-        <div className={`h-9 w-9 rounded-md grid place-items-center ${tone === "warn" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
+        <div
+          className={`h-9 w-9 rounded-md grid place-items-center ${tone === "warn" ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}
+        >
           {icon}
         </div>
         <div>
@@ -297,7 +369,9 @@ function AddInventoryDialog() {
     }
     addInventoryItem({
       ...form,
-      sku: form.sku.trim() || form.name.slice(0, 3).toUpperCase() + "-" + Math.floor(Math.random() * 900 + 100),
+      sku:
+        form.sku.trim() ||
+        form.name.slice(0, 3).toUpperCase() + "-" + Math.floor(Math.random() * 900 + 100),
       onHand: Number(form.onHand) || 0,
       reorderLevel: Number(form.reorderLevel) || 0,
       reorderQty: Number(form.reorderQty) || 0,
@@ -305,7 +379,19 @@ function AddInventoryDialog() {
     });
     toast.success(`Added ${form.name} to inventory`);
     setOpen(false);
-    setForm({ sku: "", name: "", category: "Filter", unit: "ea", onHand: 0, reorderLevel: 2, reorderQty: 5, vendor: "", unitCost: 0, location: "", notes: "" });
+    setForm({
+      sku: "",
+      name: "",
+      category: "Filter",
+      unit: "ea",
+      onHand: 0,
+      reorderLevel: 2,
+      reorderQty: 5,
+      vendor: "",
+      unitCost: 0,
+      location: "",
+      notes: "",
+    });
   };
 
   return (
@@ -319,54 +405,111 @@ function AddInventoryDialog() {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Add inventory</DialogTitle>
-          <DialogDescription>Log stock you already have on the shelf. This does not create a purchase order.</DialogDescription>
+          <DialogDescription>
+            Log stock you already have on the shelf. This does not create a purchase order.
+          </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 md:grid-cols-2">
           <Field label="Item name *">
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Sediment Filter 10in" />
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder="Sediment Filter 10in"
+            />
           </Field>
           <Field label="SKU">
-            <Input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} placeholder="auto" />
+            <Input
+              value={form.sku}
+              onChange={(e) => setForm({ ...form, sku: e.target.value })}
+              placeholder="auto"
+            />
           </Field>
           <Field label="Category">
             <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {["Filter", "Membrane", "Salt", "Media", "Fittings", "Tank", "System", "Chemical", "Other"].map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                {[
+                  "Filter",
+                  "Membrane",
+                  "Salt",
+                  "Media",
+                  "Fittings",
+                  "Tank",
+                  "System",
+                  "Chemical",
+                  "Other",
+                ].map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </Field>
           <Field label="Unit">
-            <Input value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} placeholder="ea, bag, ft" />
+            <Input
+              value={form.unit}
+              onChange={(e) => setForm({ ...form, unit: e.target.value })}
+              placeholder="ea, bag, ft"
+            />
           </Field>
           <Field label="On hand">
-            <Input type="number" value={form.onHand} onChange={(e) => setForm({ ...form, onHand: Number(e.target.value) })} />
+            <Input
+              type="number"
+              value={form.onHand}
+              onChange={(e) => setForm({ ...form, onHand: Number(e.target.value) })}
+            />
           </Field>
           <Field label="Reorder at ≤">
-            <Input type="number" value={form.reorderLevel} onChange={(e) => setForm({ ...form, reorderLevel: Number(e.target.value) })} />
+            <Input
+              type="number"
+              value={form.reorderLevel}
+              onChange={(e) => setForm({ ...form, reorderLevel: Number(e.target.value) })}
+            />
           </Field>
           <Field label="Reorder qty">
-            <Input type="number" value={form.reorderQty} onChange={(e) => setForm({ ...form, reorderQty: Number(e.target.value) })} />
+            <Input
+              type="number"
+              value={form.reorderQty}
+              onChange={(e) => setForm({ ...form, reorderQty: Number(e.target.value) })}
+            />
           </Field>
           <Field label="Unit cost">
-            <Input type="number" value={form.unitCost} onChange={(e) => setForm({ ...form, unitCost: Number(e.target.value) })} />
+            <Input
+              type="number"
+              value={form.unitCost}
+              onChange={(e) => setForm({ ...form, unitCost: Number(e.target.value) })}
+            />
           </Field>
           <Field label="Vendor">
-            <Input value={form.vendor} onChange={(e) => setForm({ ...form, vendor: e.target.value })} />
+            <Input
+              value={form.vendor}
+              onChange={(e) => setForm({ ...form, vendor: e.target.value })}
+            />
           </Field>
           <Field label="Location">
-            <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Shelf A-3" />
+            <Input
+              value={form.location}
+              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              placeholder="Shelf A-3"
+            />
           </Field>
           <div className="md:col-span-2">
             <Field label="Notes">
-              <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} />
+              <Textarea
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                rows={2}
+              />
             </Field>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button onClick={submit}>Add to inventory</Button>
         </DialogFooter>
       </DialogContent>
@@ -385,10 +528,14 @@ function CreateOrderDialog() {
   const [eta, setEta] = useState(new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10));
   const [tracking, setTracking] = useState("");
   const [notes, setNotes] = useState("");
-  const [lines, setLines] = useState<{ name: string; qty: number; inventoryId?: string }[]>([{ name: "", qty: 1 }]);
+  const [lines, setLines] = useState<{ name: string; qty: number; inventoryId?: string }[]>([
+    { name: "", qty: 1 },
+  ]);
 
-  const setLine = (idx: number, patch: Partial<{ name: string; qty: number; inventoryId?: string }>) =>
-    setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
+  const setLine = (
+    idx: number,
+    patch: Partial<{ name: string; qty: number; inventoryId?: string }>,
+  ) => setLines((ls) => ls.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
 
   const pickInventory = (idx: number, invId: string) => {
     if (invId === "custom") {
@@ -434,7 +581,8 @@ function CreateOrderDialog() {
         <DialogHeader>
           <DialogTitle>Create supply order</DialogTitle>
           <DialogDescription>
-            Place an order with a vendor. When you mark it received, quantities are added to inventory.
+            Place an order with a vendor. When you mark it received, quantities are added to
+            inventory.
           </DialogDescription>
         </DialogHeader>
 
@@ -448,7 +596,12 @@ function CreateOrderDialog() {
                   size="sm"
                   variant="outline"
                   className="h-7 text-xs"
-                  onClick={() => setLines((ls) => [...ls.filter((l) => l.name || l.inventoryId), { inventoryId: i.id, name: i.name, qty: i.reorderQty || 1 }])}
+                  onClick={() =>
+                    setLines((ls) => [
+                      ...ls.filter((l) => l.name || l.inventoryId),
+                      { inventoryId: i.id, name: i.name, qty: i.reorderQty || 1 },
+                    ])
+                  }
                 >
                   + {i.name} ({i.onHand}/{i.reorderLevel})
                 </Button>
@@ -459,11 +612,17 @@ function CreateOrderDialog() {
 
         <div className="grid gap-3 md:grid-cols-2">
           <Field label="Vendor *">
-            <Input value={vendor} onChange={(e) => setVendor(e.target.value)} placeholder="Culligan Supply" />
+            <Input
+              value={vendor}
+              onChange={(e) => setVendor(e.target.value)}
+              placeholder="Culligan Supply"
+            />
           </Field>
           <Field label="Link to job (optional)">
             <Select value={jobId} onValueChange={setJobId}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Stock replenishment</SelectItem>
                 {jobs.map((j) => {
@@ -488,19 +647,33 @@ function CreateOrderDialog() {
         <div>
           <div className="mb-1.5 flex items-center justify-between">
             <Label>Line items</Label>
-            <Button size="sm" variant="ghost" onClick={() => setLines((ls) => [...ls, { name: "", qty: 1 }])}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setLines((ls) => [...ls, { name: "", qty: 1 }])}
+            >
               <Plus className="mr-1 h-3.5 w-3.5" /> Add line
             </Button>
           </div>
           <div className="space-y-2">
             {lines.map((l, i) => (
-              <div key={i} className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1.4fr)_80px_36px] gap-2">
-                <Select value={l.inventoryId || "custom"} onValueChange={(v) => pickInventory(i, v)}>
-                  <SelectTrigger><SelectValue placeholder="Inventory / custom" /></SelectTrigger>
+              <div
+                key={i}
+                className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1.4fr)_80px_36px] gap-2"
+              >
+                <Select
+                  value={l.inventoryId || "custom"}
+                  onValueChange={(v) => pickInventory(i, v)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Inventory / custom" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="custom">Custom item…</SelectItem>
                     {inventory.map((it) => (
-                      <SelectItem key={it.id} value={it.id}>{it.name} ({it.onHand})</SelectItem>
+                      <SelectItem key={it.id} value={it.id}>
+                        {it.name} ({it.onHand})
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -509,8 +682,17 @@ function CreateOrderDialog() {
                   onChange={(e) => setLine(i, { name: e.target.value })}
                   placeholder="Description"
                 />
-                <Input type="number" min={1} value={l.qty} onChange={(e) => setLine(i, { qty: Number(e.target.value) })} />
-                <Button size="icon" variant="ghost" onClick={() => setLines((ls) => ls.filter((_, x) => x !== i))}>
+                <Input
+                  type="number"
+                  min={1}
+                  value={l.qty}
+                  onChange={(e) => setLine(i, { qty: Number(e.target.value) })}
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setLines((ls) => ls.filter((_, x) => x !== i))}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -523,7 +705,9 @@ function CreateOrderDialog() {
         </Field>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button onClick={submit}>Create order</Button>
         </DialogFooter>
       </DialogContent>

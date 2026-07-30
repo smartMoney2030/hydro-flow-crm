@@ -92,8 +92,27 @@ interface CRMState {
   removeUser: (id: string) => void;
 
   findDuplicateCustomers: (candidate: Partial<Customer>) => DuplicateMatch[];
-  addExistingCustomer: (input: ExistingCustomerInput, opts?: { batchId?: string; createLead?: boolean }) => { customer: Customer; equipmentIds: string[]; maintenanceIds: string[]; eventIds: string[]; leadId?: string };
+  addExistingCustomer: (
+    input: ExistingCustomerInput,
+    opts?: { batchId?: string; createLead?: boolean },
+  ) => {
+    customer: Customer;
+    equipmentIds: string[];
+    maintenanceIds: string[];
+    eventIds: string[];
+    leadId?: string;
+  };
   updateCustomer: (id: string, patch: Partial<Customer>) => void;
+  addEquipment: (equipment: Omit<Equipment, "id">) => Equipment;
+  updateEquipment: (id: string, patch: Partial<Equipment>) => void;
+  addJob: (job: Omit<Job, "id">) => Job;
+  updateJob: (id: string, patch: Partial<Job>) => void;
+  addInstallation: (installation: Omit<Installation, "id">) => Installation;
+  updateInstallation: (id: string, patch: Partial<Installation>) => void;
+  addMaintenance: (visit: Omit<MaintenanceVisit, "id">) => MaintenanceVisit;
+  updateMaintenance: (id: string, patch: Partial<MaintenanceVisit>) => void;
+  addTask: (task: Omit<Task, "id" | "createdAt">) => Task;
+  updateTask: (id: string, patch: Partial<Task>) => void;
   commitImportBatch: (batch: Omit<ImportBatch, "id" | "createdAt" | "actorId">) => ImportBatch;
   reverseImportBatch: (id: string) => boolean;
 }
@@ -169,24 +188,53 @@ export const useCRM = create<CRMState>((set, get) => ({
   addInventoryItem: (item) => {
     const it: InventoryItem = { id: uid("inv"), updatedAt: new Date().toISOString(), ...item };
     set((s) => ({ inventory: [it, ...s.inventory] }));
-    get().addAudit({ actorId: get().currentUserId, action: "created", entity: "Inventory", entityId: it.id, detail: `${it.sku} ${it.name} qty ${it.onHand}` });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "created",
+      entity: "Inventory",
+      entityId: it.id,
+      detail: `${it.sku} ${it.name} qty ${it.onHand}`,
+    });
     return it;
   },
   updateInventoryItem: (id, patch) => {
-    set((s) => ({ inventory: s.inventory.map((i) => (i.id === id ? { ...i, ...patch, updatedAt: new Date().toISOString() } : i)) }));
-    get().addAudit({ actorId: get().currentUserId, action: "updated", entity: "Inventory", entityId: id, detail: "Inventory item edited" });
+    set((s) => ({
+      inventory: s.inventory.map((i) =>
+        i.id === id ? { ...i, ...patch, updatedAt: new Date().toISOString() } : i,
+      ),
+    }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "Inventory",
+      entityId: id,
+      detail: "Inventory item edited",
+    });
   },
   removeInventoryItem: (id) => {
     set((s) => ({ inventory: s.inventory.filter((i) => i.id !== id) }));
-    get().addAudit({ actorId: get().currentUserId, action: "deleted", entity: "Inventory", entityId: id });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "deleted",
+      entity: "Inventory",
+      entityId: id,
+    });
   },
   adjustInventory: (id, delta, reason) => {
     set((s) => ({
       inventory: s.inventory.map((i) =>
-        i.id === id ? { ...i, onHand: Math.max(0, i.onHand + delta), updatedAt: new Date().toISOString() } : i
+        i.id === id
+          ? { ...i, onHand: Math.max(0, i.onHand + delta), updatedAt: new Date().toISOString() }
+          : i,
       ),
     }));
-    get().addAudit({ actorId: get().currentUserId, action: "adjusted", entity: "Inventory", entityId: id, detail: `${delta > 0 ? "+" : ""}${delta}${reason ? ` (${reason})` : ""}` });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "adjusted",
+      entity: "Inventory",
+      entityId: id,
+      detail: `${delta > 0 ? "+" : ""}${delta}${reason ? ` (${reason})` : ""}`,
+    });
   },
   createSupplyOrder: (input) => {
     const order: SupplyOrder = {
@@ -202,7 +250,13 @@ export const useCRM = create<CRMState>((set, get) => ({
     };
     set((s) => ({ supplyOrders: [order, ...s.supplyOrders] }));
     // Track pending receipts against inventory (metadata via notes; stock is added on receive)
-    get().addAudit({ actorId: get().currentUserId, action: "created", entity: "SupplyOrder", entityId: order.id, detail: `${order.vendor} · ${order.lineItems.length} items` });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "created",
+      entity: "SupplyOrder",
+      entityId: order.id,
+      detail: `${order.vendor} · ${order.lineItems.length} items`,
+    });
     return order;
   },
   receiveSupplyOrder: (id) => {
@@ -210,21 +264,172 @@ export const useCRM = create<CRMState>((set, get) => ({
     if (!order) return;
     set((s) => ({
       supplyOrders: s.supplyOrders.map((o) =>
-        o.id === id ? { ...o, status: "Delivered", actualDelivery: new Date().toISOString() } : o
+        o.id === id ? { ...o, status: "Delivered", actualDelivery: new Date().toISOString() } : o,
       ),
       inventory: s.inventory.map((i) => {
-        const li = order.lineItems.find((l) => l.name.toLowerCase() === i.name.toLowerCase() || l.name.toLowerCase() === i.sku.toLowerCase());
+        const li = order.lineItems.find(
+          (l) =>
+            l.name.toLowerCase() === i.name.toLowerCase() ||
+            l.name.toLowerCase() === i.sku.toLowerCase(),
+        );
         return li ? { ...i, onHand: i.onHand + li.qty, updatedAt: new Date().toISOString() } : i;
       }),
     }));
-    get().addAudit({ actorId: get().currentUserId, action: "received", entity: "SupplyOrder", entityId: id, detail: `Stock incremented` });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "received",
+      entity: "SupplyOrder",
+      entityId: id,
+      detail: `Stock incremented`,
+    });
   },
 
   findDuplicateCustomers: (candidate) => findDuplicates(candidate, get().customers),
 
   updateCustomer: (id, patch) => {
-    set((s) => ({ customers: s.customers.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
-    get().addAudit({ actorId: get().currentUserId, action: "updated", entity: "Customer", entityId: id, detail: "Historical data edited" });
+    const location = patch.propertyAddress ? geocode(patch.propertyAddress) : undefined;
+    set((s) => ({
+      customers: s.customers.map((c) =>
+        c.id === id ? { ...c, ...patch, ...(location || {}) } : c,
+      ),
+    }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "Customer",
+      entityId: id,
+      detail: "Historical data edited",
+    });
+  },
+
+  addEquipment: (input) => {
+    const equipment: Equipment = { id: uid("eq"), ...input };
+    set((s) => ({ equipment: [equipment, ...s.equipment] }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "created",
+      entity: "Equipment",
+      entityId: equipment.id,
+      detail: `${equipment.type} · ${equipment.model}`,
+    });
+    return equipment;
+  },
+
+  updateEquipment: (id, patch) => {
+    set((s) => ({
+      equipment: s.equipment.map((equipment) =>
+        equipment.id === id ? { ...equipment, ...patch } : equipment,
+      ),
+    }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "Equipment",
+      entityId: id,
+      detail: "Equipment details edited",
+    });
+  },
+
+  addJob: (input) => {
+    const job: Job = { id: uid("j"), ...input };
+    set((s) => ({ jobs: [job, ...s.jobs] }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "created",
+      entity: "Job",
+      entityId: job.id,
+      detail: `${job.invoiceNumber} · ${job.systemType}`,
+    });
+    return job;
+  },
+
+  updateJob: (id, patch) => {
+    set((s) => ({ jobs: s.jobs.map((job) => (job.id === id ? { ...job, ...patch } : job)) }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "Job",
+      entityId: id,
+      detail: "Job details edited",
+    });
+  },
+
+  addInstallation: (input) => {
+    const installation: Installation = { id: uid("i"), ...input };
+    set((s) => ({ installations: [installation, ...s.installations] }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "created",
+      entity: "Installation",
+      entityId: installation.id,
+      detail: `${installation.status} · ${installation.address}`,
+    });
+    return installation;
+  },
+
+  updateInstallation: (id, patch) => {
+    set((s) => ({
+      installations: s.installations.map((installation) =>
+        installation.id === id ? { ...installation, ...patch } : installation,
+      ),
+    }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "Installation",
+      entityId: id,
+      detail: "Installation details edited",
+    });
+  },
+
+  addMaintenance: (input) => {
+    const visit: MaintenanceVisit = { id: uid("m"), ...input };
+    set((s) => ({ maintenance: [visit, ...s.maintenance] }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "created",
+      entity: "Maintenance",
+      entityId: visit.id,
+      detail: `${visit.status} · due ${visit.dueDate}`,
+    });
+    return visit;
+  },
+
+  updateMaintenance: (id, patch) => {
+    set((s) => ({
+      maintenance: s.maintenance.map((visit) => (visit.id === id ? { ...visit, ...patch } : visit)),
+    }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "Maintenance",
+      entityId: id,
+      detail: "Maintenance details edited",
+    });
+  },
+
+  addTask: (input) => {
+    const task: Task = { id: uid("t"), createdAt: new Date().toISOString(), ...input };
+    set((s) => ({ tasks: [task, ...s.tasks] }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "created",
+      entity: "Task",
+      entityId: task.id,
+      detail: task.title,
+    });
+    return task;
+  },
+
+  updateTask: (id, patch) => {
+    set((s) => ({ tasks: s.tasks.map((task) => (task.id === id ? { ...task, ...patch } : task)) }));
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "Task",
+      entityId: id,
+      detail: "Task details edited",
+    });
   },
 
   addExistingCustomer: (input, opts) => {
@@ -260,31 +465,49 @@ export const useCRM = create<CRMState>((set, get) => ({
     };
 
     const equipmentIds: string[] = [];
-    const newEquipment: Equipment[] = (input.equipment || []).filter((e) => e.type || e.model || e.serial).map((e) => {
-      const id = uid("eq");
-      equipmentIds.push(id);
-      const installDate = input.originalInstallDate || input.originalSaleDate || new Date().toISOString();
-      const nextDue = input.nextMaintenance || (input.originalInstallDate ? addYear(input.originalInstallDate) : addYear(new Date().toISOString()));
-      return {
-        id,
-        customerId: custId,
-        type: e.type || "Unknown",
-        model: e.model || "—",
-        serial: e.serial || "—",
-        installDate,
-        warrantyExpires: e.warrantyExpires || addYear(addYear(addYear(addYear(addYear(installDate))))),
-        status: input.stage === "Inactive Customer" ? "Retired" : "Active",
-        lastMaintenance: input.lastMaintenance,
-        nextMaintenance: nextDue,
-        notes: "Historical record — imported",
-      };
-    });
+    const newEquipment: Equipment[] = (input.equipment || [])
+      .filter((e) => e.type || e.model || e.serial)
+      .map((e) => {
+        const id = uid("eq");
+        equipmentIds.push(id);
+        const installDate =
+          input.originalInstallDate || input.originalSaleDate || new Date().toISOString();
+        const nextDue =
+          input.nextMaintenance ||
+          (input.originalInstallDate
+            ? addYear(input.originalInstallDate)
+            : addYear(new Date().toISOString()));
+        return {
+          id,
+          customerId: custId,
+          type: e.type || "Unknown",
+          model: e.model || "—",
+          serial: e.serial || "—",
+          installDate,
+          warrantyExpires:
+            e.warrantyExpires || addYear(addYear(addYear(addYear(addYear(installDate))))),
+          status: input.stage === "Inactive Customer" ? "Retired" : "Active",
+          lastMaintenance: input.lastMaintenance,
+          nextMaintenance: nextDue,
+          notes: "Historical record — imported",
+        };
+      });
 
     const maintenanceIds: string[] = [];
     const maintStatus = stageToMaintStatus[input.stage];
-    let newMaint: MaintenanceVisit[] = [];
-    if (maintStatus && (input.enrolledInMaintenance || ["Active Maintenance Customer", "Maintenance Due", "Maintenance Overdue"].includes(input.stage))) {
-      const dueDate = input.nextMaintenance || (input.originalInstallDate ? addYear(input.originalInstallDate) : addYear(new Date().toISOString()));
+    const newMaint: MaintenanceVisit[] = [];
+    if (
+      maintStatus &&
+      (input.enrolledInMaintenance ||
+        ["Active Maintenance Customer", "Maintenance Due", "Maintenance Overdue"].includes(
+          input.stage,
+        ))
+    ) {
+      const dueDate =
+        input.nextMaintenance ||
+        (input.originalInstallDate
+          ? addYear(input.originalInstallDate)
+          : addYear(new Date().toISOString()));
       const mId = uid("m");
       maintenanceIds.push(mId);
       newMaint.push({
@@ -347,7 +570,10 @@ export const useCRM = create<CRMState>((set, get) => ({
         status: "New Lead",
         assignedTo: input.assignedSalespersonId || get().currentUserId,
         waterConcerns: [],
-        currentEquipment: (input.equipment || []).map((e) => [e.type, e.model].filter(Boolean).join(" ")).filter(Boolean).join(", "),
+        currentEquipment: (input.equipment || [])
+          .map((e) => [e.type, e.model].filter(Boolean).join(" "))
+          .filter(Boolean)
+          .join(", "),
         quoteStatus: "Draft",
         notes: `Auto-created from existing customer import (stage: ${input.stage})`,
         createdAt: new Date().toISOString(),
@@ -395,9 +621,17 @@ export const useCRM = create<CRMState>((set, get) => ({
       maintenance: s.maintenance.filter((m) => !batch.maintenanceIds.includes(m.id)),
       events: s.events.filter((e) => !batch.eventIds.includes(e.id)),
       leads: s.leads.filter((l) => !(batch.leadIds || []).includes(l.id)),
-      importBatches: s.importBatches.map((b) => (b.id === id ? { ...b, reversedAt: new Date().toISOString() } : b)),
+      importBatches: s.importBatches.map((b) =>
+        b.id === id ? { ...b, reversedAt: new Date().toISOString() } : b,
+      ),
     }));
-    get().addAudit({ actorId: state.currentUserId, action: "reversed", entity: "ImportBatch", entityId: id, detail: `Removed ${batch.customerIds.length} imported customers` });
+    get().addAudit({
+      actorId: state.currentUserId,
+      action: "reversed",
+      entity: "ImportBatch",
+      entityId: id,
+      detail: `Removed ${batch.customerIds.length} imported customers`,
+    });
     return true;
   },
 
@@ -407,61 +641,146 @@ export const useCRM = create<CRMState>((set, get) => ({
   },
   setLeadStatus: (id, status) => {
     set((s) => ({ leads: s.leads.map((l) => (l.id === id ? { ...l, status } : l)) }));
-    get().addAudit({ actorId: get().currentUserId, action: "updated", entity: "Lead", entityId: id, detail: `Status → ${status}` });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "Lead",
+      entityId: id,
+      detail: `Status → ${status}`,
+    });
     if (status === "Sale Won") {
-      get().addAutomationRun({ ruleId: "ar2", status: "success", detail: `Lead ${id} converted (mock job creation)` });
+      get().addAutomationRun({
+        ruleId: "ar2",
+        status: "success",
+        detail: `Lead ${id} converted (mock job creation)`,
+      });
     }
   },
   setJobStatus: (id, status) => {
     set((s) => ({ jobs: s.jobs.map((j) => (j.id === id ? { ...j, status } : j)) }));
-    get().addAudit({ actorId: get().currentUserId, action: "updated", entity: "Job", entityId: id, detail: `Status → ${status}` });
-    if (status === "Supplies Need Ordering") get().addAutomationRun({ ruleId: "ar3", status: "success", detail: `Job ${id} advanced by deposit` });
-    if (status === "Ready to Schedule") get().addAutomationRun({ ruleId: "ar4", status: "success", detail: `Job ${id} supplies delivered` });
-    if (status === "Installation Scheduled") get().addAutomationRun({ ruleId: "ar5", status: "success", detail: `Install for ${id} synced to calendar` });
-    if (status === "Installation Completed") get().addAutomationRun({ ruleId: "ar6", status: "success", detail: `Equipment records + warranty created for ${id}` });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "Job",
+      entityId: id,
+      detail: `Status → ${status}`,
+    });
+    if (status === "Supplies Need Ordering")
+      get().addAutomationRun({
+        ruleId: "ar3",
+        status: "success",
+        detail: `Job ${id} advanced by deposit`,
+      });
+    if (status === "Ready to Schedule")
+      get().addAutomationRun({
+        ruleId: "ar4",
+        status: "success",
+        detail: `Job ${id} supplies delivered`,
+      });
+    if (status === "Installation Scheduled")
+      get().addAutomationRun({
+        ruleId: "ar5",
+        status: "success",
+        detail: `Install for ${id} synced to calendar`,
+      });
+    if (status === "Installation Completed")
+      get().addAutomationRun({
+        ruleId: "ar6",
+        status: "success",
+        detail: `Equipment records + warranty created for ${id}`,
+      });
   },
   setMaintStatus: (id, status) => {
     set((s) => ({ maintenance: s.maintenance.map((m) => (m.id === id ? { ...m, status } : m)) }));
-    get().addAudit({ actorId: get().currentUserId, action: "updated", entity: "Maintenance", entityId: id, detail: `Status → ${status}` });
-    if (status === "Maintenance Completed") get().addAutomationRun({ ruleId: "ar8", status: "success", detail: `Next visit scheduled +1yr for ${id}` });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "Maintenance",
+      entityId: id,
+      detail: `Status → ${status}`,
+    });
+    if (status === "Maintenance Completed")
+      get().addAutomationRun({
+        ruleId: "ar8",
+        status: "success",
+        detail: `Next visit scheduled +1yr for ${id}`,
+      });
   },
   toggleTask: (id) =>
     set((s) => ({ tasks: s.tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)) })),
   toggleAutomation: (id) =>
-    set((s) => ({ automationRules: s.automationRules.map((r) => (r.id === id ? { ...r, enabled: !r.enabled } : r)) })),
-  markNotifRead: (id) => set((s) => ({ notifications: s.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)) })),
-  markAllNotifsRead: () => set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
+    set((s) => ({
+      automationRules: s.automationRules.map((r) =>
+        r.id === id ? { ...r, enabled: !r.enabled } : r,
+      ),
+    })),
+  markNotifRead: (id) =>
+    set((s) => ({
+      notifications: s.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+    })),
+  markAllNotifsRead: () =>
+    set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
   rescheduleEvent: (id, newStartISO) =>
     set((s) => ({
       events: s.events.map((e) => {
         if (e.id !== id) return e;
         const dur = new Date(e.endAt).getTime() - new Date(e.startAt).getTime();
-        return { ...e, startAt: newStartISO, endAt: new Date(new Date(newStartISO).getTime() + dur).toISOString() };
+        return {
+          ...e,
+          startAt: newStartISO,
+          endAt: new Date(new Date(newStartISO).getTime() + dur).toISOString(),
+        };
       }),
     })),
   reassignEvent: (id, techId) =>
-    set((s) => ({ events: s.events.map((e) => (e.id === id ? { ...e, technicianId: techId } : e)) })),
+    set((s) => ({
+      events: s.events.map((e) => (e.id === id ? { ...e, technicianId: techId } : e)),
+    })),
   addAudit: (a) =>
     set((s) => ({
-      audit: [{ id: `a${s.audit.length + 1}-${Date.now()}`, at: new Date().toISOString(), ...a }, ...s.audit].slice(0, 200),
+      audit: [
+        { id: `a${s.audit.length + 1}-${Date.now()}`, at: new Date().toISOString(), ...a },
+        ...s.audit,
+      ].slice(0, 200),
     })),
   addUser: (u) => {
     const user: User = { id: uid("u"), ...u };
     set((s) => ({ users: [...s.users, user] }));
-    get().addAudit({ actorId: get().currentUserId, action: "created", entity: "User", entityId: user.id, detail: user.name });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "created",
+      entity: "User",
+      entityId: user.id,
+      detail: user.name,
+    });
     return user;
   },
   updateUser: (id, patch) => {
     set((s) => ({ users: s.users.map((u) => (u.id === id ? { ...u, ...patch } : u)) }));
-    get().addAudit({ actorId: get().currentUserId, action: "updated", entity: "User", entityId: id, detail: "Team member edited" });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "updated",
+      entity: "User",
+      entityId: id,
+      detail: "Team member edited",
+    });
   },
   removeUser: (id) => {
     set((s) => ({ users: s.users.filter((u) => u.id !== id) }));
-    get().addAudit({ actorId: get().currentUserId, action: "deleted", entity: "User", entityId: id, detail: "Team member removed" });
+    get().addAudit({
+      actorId: get().currentUserId,
+      action: "deleted",
+      entity: "User",
+      entityId: id,
+      detail: "Team member removed",
+    });
   },
   addAutomationRun: (r) =>
     set((s) => ({
-      automationRuns: [{ id: `arn-${Date.now()}`, at: new Date().toISOString(), ...r }, ...s.automationRuns].slice(0, 100),
+      automationRuns: [
+        { id: `arn-${Date.now()}`, at: new Date().toISOString(), ...r },
+        ...s.automationRuns,
+      ].slice(0, 100),
     })),
 }));
 

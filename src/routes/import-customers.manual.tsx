@@ -5,7 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useMemo, useState } from "react";
@@ -19,7 +25,12 @@ import type { CustomerStage, PaymentStatus } from "@/data/types";
 
 export const Route = createFileRoute("/import-customers/manual")({ component: ManualEntry });
 
-const emptyEquipment = (): ExistingCustomerEquipment => ({ type: "", model: "", serial: "", warrantyExpires: "" });
+const emptyEquipment = (): ExistingCustomerEquipment => ({
+  type: "",
+  model: "",
+  serial: "",
+  warrantyExpires: "",
+});
 
 function ManualEntry() {
   const navigate = useNavigate();
@@ -59,7 +70,15 @@ function ManualEntry() {
             propertyAddress: form.propertyAddress,
           }).filter((m) => m.customer.id !== editingId)
         : [],
-    [form.firstName, form.lastName, form.phone, form.email, form.propertyAddress, editingId, findDupes]
+    [
+      form.firstName,
+      form.lastName,
+      form.phone,
+      form.email,
+      form.propertyAddress,
+      editingId,
+      findDupes,
+    ],
   );
 
   const set = <K extends keyof ExistingCustomerInput>(k: K, v: ExistingCustomerInput[K]) =>
@@ -150,7 +169,9 @@ function ManualEntry() {
         description="Historical information is clearly labeled and can be edited later."
         actions={
           <Link to="/import-customers">
-            <Button variant="outline" size="sm"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back
+            </Button>
           </Link>
         }
       />
@@ -164,15 +185,50 @@ function ManualEntry() {
                   <HistoricalBadge />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Field label="First name *"><Input value={form.firstName} onChange={(e) => set("firstName", e.target.value)} /></Field>
-                  <Field label="Last name *"><Input value={form.lastName} onChange={(e) => set("lastName", e.target.value)} /></Field>
-                  <Field label="Phone"><Input value={form.phone} onChange={(e) => set("phone", e.target.value)} /></Field>
-                  <Field label="Email"><Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} /></Field>
-                  <Field label="Billing address"><Input value={form.billingAddress} onChange={(e) => set("billingAddress", e.target.value)} /></Field>
-                  <Field label="Property / install address *"><Input value={form.propertyAddress} onChange={(e) => set("propertyAddress", e.target.value)} /></Field>
+                  <Field label="First name *">
+                    <Input
+                      value={form.firstName}
+                      onChange={(e) => set("firstName", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Last name *">
+                    <Input
+                      value={form.lastName}
+                      onChange={(e) => set("lastName", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Phone">
+                    <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+                  </Field>
+                  <Field label="Email">
+                    <Input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => set("email", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Billing address">
+                    <Input
+                      value={form.billingAddress}
+                      onChange={(e) => set("billingAddress", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Property / install address *">
+                    <Input
+                      value={form.propertyAddress}
+                      onChange={(e) => set("propertyAddress", e.target.value)}
+                    />
+                  </Field>
                   <Field label="Preferred contact">
-                    <Select value={form.preferredContact} onValueChange={(v) => set("preferredContact", v as "phone" | "email" | "text")}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                    <Select
+                      value={form.preferredContact}
+                      onValueChange={(v) =>
+                        set("preferredContact", v as "phone" | "email" | "text")
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="phone">Phone</SelectItem>
                         <SelectItem value="email">Email</SelectItem>
@@ -180,43 +236,107 @@ function ManualEntry() {
                       </SelectContent>
                     </Select>
                   </Field>
-                  <Field label="Notes"><Textarea rows={2} value={form.notes} onChange={(e) => set("notes", e.target.value)} /></Field>
+                  <Field label="Notes">
+                    <Textarea
+                      rows={2}
+                      value={form.notes}
+                      onChange={(e) => set("notes", e.target.value)}
+                    />
+                  </Field>
                 </div>
               </CardContent>
             </Card>
 
-            {dupes.length > 0 && <DuplicateWarning matches={dupes} onUpdateExisting={prefillFromExisting} />}
+            {dupes.length > 0 && (
+              <DuplicateWarning matches={dupes} onUpdateExisting={prefillFromExisting} />
+            )}
 
             <Card>
               <CardContent className="p-5 space-y-3">
                 <div className="text-sm font-semibold">Historical sale</div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Field label="Original sale date"><Input type="date" value={dateVal(form.originalSaleDate)} onChange={(e) => set("originalSaleDate", e.target.value ? new Date(e.target.value).toISOString() : undefined)} /></Field>
-                  <Field label="Original install date"><Input type="date" value={dateVal(form.originalInstallDate)} onChange={(e) => set("originalInstallDate", e.target.value ? new Date(e.target.value).toISOString() : undefined)} /></Field>
+                  <Field label="Original sale date">
+                    <Input
+                      type="date"
+                      value={dateVal(form.originalSaleDate)}
+                      onChange={(e) =>
+                        set(
+                          "originalSaleDate",
+                          e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                        )
+                      }
+                    />
+                  </Field>
+                  <Field label="Original install date">
+                    <Input
+                      type="date"
+                      value={dateVal(form.originalInstallDate)}
+                      onChange={(e) =>
+                        set(
+                          "originalInstallDate",
+                          e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                        )
+                      }
+                    />
+                  </Field>
                   <Field label="Purchase price">
-                    <Input type="number" min={0} value={form.purchasePrice ?? ""} onChange={(e) => set("purchasePrice", e.target.value ? Number(e.target.value) : undefined)} />
+                    <Input
+                      type="number"
+                      min={0}
+                      value={form.purchasePrice ?? ""}
+                      onChange={(e) =>
+                        set("purchasePrice", e.target.value ? Number(e.target.value) : undefined)
+                      }
+                    />
                   </Field>
                   <Field label="Payment status">
-                    <Select value={form.paymentStatus || ""} onValueChange={(v) => set("paymentStatus", v as PaymentStatus)}>
-                      <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <Select
+                      value={form.paymentStatus || ""}
+                      onValueChange={(v) => set("paymentStatus", v as PaymentStatus)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
                       <SelectContent>
-                        {PAYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        {PAYMENT_STATUSES.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </Field>
                   <Field label="Assigned salesperson">
-                    <Select value={form.assignedSalespersonId || ""} onValueChange={(v) => set("assignedSalespersonId", v)}>
-                      <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                    <Select
+                      value={form.assignedSalespersonId || ""}
+                      onValueChange={(v) => set("assignedSalespersonId", v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Unassigned" />
+                      </SelectTrigger>
                       <SelectContent>
-                        {salespeople.map((u) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+                        {salespeople.map((u) => (
+                          <SelectItem key={u.id} value={u.id}>
+                            {u.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </Field>
                   <Field label="Assigned technician">
-                    <Select value={form.assignedTechnicianId || ""} onValueChange={(v) => set("assignedTechnicianId", v)}>
-                      <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
+                    <Select
+                      value={form.assignedTechnicianId || ""}
+                      onValueChange={(v) => set("assignedTechnicianId", v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Unassigned" />
+                      </SelectTrigger>
                       <SelectContent>
-                        {technicians.map((u) => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+                        {technicians.map((u) => (
+                          <SelectItem key={u.id} value={u.id}>
+                            {u.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </Field>
@@ -228,18 +348,64 @@ function ManualEntry() {
               <CardContent className="p-5 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-semibold">Equipment installed</div>
-                  <Button type="button" size="sm" variant="outline" onClick={() => set("equipment", [...(form.equipment || []), emptyEquipment()])}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => set("equipment", [...(form.equipment || []), emptyEquipment()])}
+                  >
                     <Plus className="h-3.5 w-3.5 mr-1" /> Add equipment
                   </Button>
                 </div>
                 <div className="space-y-3">
                   {(form.equipment || []).map((e, i) => (
-                    <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] items-end border rounded p-3">
-                      <Field label="Type"><Input value={e.type} onChange={(ev) => setEq(i, { type: ev.target.value })} placeholder="e.g. Softener" /></Field>
-                      <Field label="Model"><Input value={e.model} onChange={(ev) => setEq(i, { model: ev.target.value })} /></Field>
-                      <Field label="Serial"><Input value={e.serial} onChange={(ev) => setEq(i, { serial: ev.target.value })} /></Field>
-                      <Field label="Warranty expires"><Input type="date" value={dateVal(e.warrantyExpires)} onChange={(ev) => setEq(i, { warrantyExpires: ev.target.value ? new Date(ev.target.value).toISOString() : "" })} /></Field>
-                      <Button type="button" size="icon" variant="ghost" onClick={() => set("equipment", (form.equipment || []).filter((_, idx) => idx !== i))}>
+                    <div
+                      key={i}
+                      className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_1fr_auto] items-end border rounded p-3"
+                    >
+                      <Field label="Type">
+                        <Input
+                          value={e.type}
+                          onChange={(ev) => setEq(i, { type: ev.target.value })}
+                          placeholder="e.g. Softener"
+                        />
+                      </Field>
+                      <Field label="Model">
+                        <Input
+                          value={e.model}
+                          onChange={(ev) => setEq(i, { model: ev.target.value })}
+                        />
+                      </Field>
+                      <Field label="Serial">
+                        <Input
+                          value={e.serial}
+                          onChange={(ev) => setEq(i, { serial: ev.target.value })}
+                        />
+                      </Field>
+                      <Field label="Warranty expires">
+                        <Input
+                          type="date"
+                          value={dateVal(e.warrantyExpires)}
+                          onChange={(ev) =>
+                            setEq(i, {
+                              warrantyExpires: ev.target.value
+                                ? new Date(ev.target.value).toISOString()
+                                : "",
+                            })
+                          }
+                        />
+                      </Field>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() =>
+                          set(
+                            "equipment",
+                            (form.equipment || []).filter((_, idx) => idx !== i),
+                          )
+                        }
+                      >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -252,16 +418,47 @@ function ManualEntry() {
               <CardContent className="p-5 space-y-3">
                 <div className="text-sm font-semibold">Maintenance</div>
                 <div className="flex items-center gap-2">
-                  <Checkbox id="enrolled" checked={!!form.enrolledInMaintenance} onCheckedChange={(v) => set("enrolledInMaintenance", !!v)} />
+                  <Checkbox
+                    id="enrolled"
+                    checked={!!form.enrolledInMaintenance}
+                    onCheckedChange={(v) => set("enrolledInMaintenance", !!v)}
+                  />
                   <Label htmlFor="enrolled">Enrolled in annual maintenance</Label>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <Field label="Last maintenance date"><Input type="date" value={dateVal(form.lastMaintenance)} onChange={(e) => set("lastMaintenance", e.target.value ? new Date(e.target.value).toISOString() : undefined)} /></Field>
+                  <Field label="Last maintenance date">
+                    <Input
+                      type="date"
+                      value={dateVal(form.lastMaintenance)}
+                      onChange={(e) =>
+                        set(
+                          "lastMaintenance",
+                          e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                        )
+                      }
+                    />
+                  </Field>
                   <Field label="Next maintenance due (auto-suggested from install date)">
-                    <Input type="date" value={dateVal(form.nextMaintenance)} onChange={(e) => set("nextMaintenance", e.target.value ? new Date(e.target.value).toISOString() : undefined)} />
+                    <Input
+                      type="date"
+                      value={dateVal(form.nextMaintenance)}
+                      onChange={(e) =>
+                        set(
+                          "nextMaintenance",
+                          e.target.value ? new Date(e.target.value).toISOString() : undefined,
+                        )
+                      }
+                    />
                   </Field>
                 </div>
-                <Field label="Previous service history"><Textarea rows={3} value={form.previousServiceHistory || ""} onChange={(e) => set("previousServiceHistory", e.target.value)} placeholder="e.g. Filter swap 2023-10; leak check 2024-04" /></Field>
+                <Field label="Previous service history">
+                  <Textarea
+                    rows={3}
+                    value={form.previousServiceHistory || ""}
+                    onChange={(e) => set("previousServiceHistory", e.target.value)}
+                    placeholder="e.g. Filter swap 2023-10; leak check 2024-04"
+                  />
+                </Field>
               </CardContent>
             </Card>
 
@@ -281,15 +478,22 @@ function ManualEntry() {
                             const r = new FileReader();
                             r.onload = () => resolve({ name: f.name, dataUrl: String(r.result) });
                             r.readAsDataURL(f);
-                          })
-                      )
+                          }),
+                      ),
                     );
-                    set("photos", [...(form.photos || []), ...encoded.filter((f) => f.dataUrl.startsWith("data:image"))]);
-                    set("documents", [...(form.documents || []), ...encoded.filter((f) => !f.dataUrl.startsWith("data:image"))]);
+                    set("photos", [
+                      ...(form.photos || []),
+                      ...encoded.filter((f) => f.dataUrl.startsWith("data:image")),
+                    ]);
+                    set("documents", [
+                      ...(form.documents || []),
+                      ...encoded.filter((f) => !f.dataUrl.startsWith("data:image")),
+                    ]);
                   }}
                 />
                 <div className="text-xs text-muted-foreground">
-                  {(form.photos?.length || 0)} photo(s), {(form.documents?.length || 0)} document(s) attached.
+                  {form.photos?.length || 0} photo(s), {form.documents?.length || 0} document(s)
+                  attached.
                 </div>
               </CardContent>
             </Card>
@@ -299,19 +503,32 @@ function ManualEntry() {
             <Card className="shadow-card">
               <CardContent className="p-5 space-y-3">
                 <div className="text-sm font-semibold">Starting stage</div>
-                <p className="text-xs text-muted-foreground">Choose where this customer belongs today — they don't have to begin as a new lead.</p>
-                <RadioGroup value={form.stage} onValueChange={(v) => set("stage", v as CustomerStage)} className="space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  Choose where this customer belongs today — they don't have to begin as a new lead.
+                </p>
+                <RadioGroup
+                  value={form.stage}
+                  onValueChange={(v) => set("stage", v as CustomerStage)}
+                  className="space-y-1"
+                >
                   {CUSTOMER_STAGES.map((s) => (
                     <div key={s} className="flex items-center gap-2 text-sm">
                       <RadioGroupItem value={s} id={s} />
-                      <Label htmlFor={s} className="cursor-pointer">{s}</Label>
+                      <Label htmlFor={s} className="cursor-pointer">
+                        {s}
+                      </Label>
                     </div>
                   ))}
                 </RadioGroup>
                 <div className="flex items-start gap-2 pt-2 border-t">
-                  <Checkbox id="createLead" checked={createLead} onCheckedChange={(v) => setCreateLead(!!v)} />
+                  <Checkbox
+                    id="createLead"
+                    checked={createLead}
+                    onCheckedChange={(v) => setCreateLead(!!v)}
+                  />
                   <Label htmlFor="createLead" className="text-xs leading-snug cursor-pointer">
-                    Also create a sales lead for this customer (off by default — historical customers should not clutter the pipeline).
+                    Also create a sales lead for this customer (off by default — historical
+                    customers should not clutter the pipeline).
                   </Label>
                 </div>
               </CardContent>
@@ -325,7 +542,9 @@ function ManualEntry() {
                   <li>Equipment records are created for previously installed systems.</li>
                   <li>Next annual maintenance is computed from the install date when possible.</li>
                   <li>Future installations and maintenance are added to the calendar.</li>
-                  <li>Record is labeled <em>Historical data</em> and can be edited later.</li>
+                  <li>
+                    Record is labeled <em>Historical data</em> and can be edited later.
+                  </li>
                 </ul>
               </CardContent>
             </Card>

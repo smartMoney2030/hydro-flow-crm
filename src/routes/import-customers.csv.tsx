@@ -3,7 +3,13 @@ import { PageHeader, Section } from "@/components/common/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useMemo, useState } from "react";
 import Papa from "papaparse";
@@ -18,7 +24,16 @@ import {
   type ImportFieldKey,
 } from "@/lib/import";
 import { toast } from "sonner";
-import { ArrowLeft, Download, Upload, Undo2, CheckCircle2, AlertCircle, XCircle, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Upload,
+  Undo2,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  Loader2,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import type { CustomerStage, PaymentStatus } from "@/data/types";
 
@@ -34,11 +49,21 @@ type PreviewRow = {
   duplicateReasons?: string[];
   resolution: Resolution;
 };
-type ImportError = { rowIndex: number; name: string; address: string; reason: string; phase: "parse" | "preview" | "save" };
-type Progress = { phase: "parse" | "preview" | "save"; current: number; total: number; message: string } | null;
+type ImportError = {
+  rowIndex: number;
+  name: string;
+  address: string;
+  reason: string;
+  phase: "parse" | "preview" | "save";
+};
+type Progress = {
+  phase: "parse" | "preview" | "save";
+  current: number;
+  total: number;
+  message: string;
+} | null;
 
 const yieldToUI = () => new Promise<void>((r) => setTimeout(r, 0));
-
 
 function CsvWizard() {
   const navigate = useNavigate();
@@ -56,7 +81,14 @@ function CsvWizard() {
   const [previews, setPreviews] = useState<PreviewRow[]>([]);
   const [progress, setProgress] = useState<Progress>(null);
   const [errors, setErrors] = useState<ImportError[]>([]);
-  const [report, setReport] = useState<{ created: number; updated: number; skipped: number; failed: number; leads: number; batchId?: string } | null>(null);
+  const [report, setReport] = useState<{
+    created: number;
+    updated: number;
+    skipped: number;
+    failed: number;
+    leads: number;
+    batchId?: string;
+  } | null>(null);
   const [alsoCreateLeads, setAlsoCreateLeads] = useState(false);
 
   const download = () => {
@@ -74,15 +106,20 @@ function CsvWizard() {
     setErrors([]);
     const data: Row[] = [];
     const parseErrs: ImportError[] = [];
+    let parsedHeaders: string[] = [];
     let parsedCount = 0;
     let lastUi = 0;
-    // Use file.size for a rough progress denominator during streaming
-    setProgress({ phase: "parse", current: 0, total: file.size, message: `Reading ${file.name}…` });
+    setProgress({ phase: "parse", current: 0, total: 0, message: `Reading ${file.name}…` });
     Papa.parse<Row>(file, {
       header: true,
       skipEmptyLines: true,
       chunkSize: 512 * 1024,
       chunk: (results, parser) => {
+        if (!parsedHeaders.length) {
+          parsedHeaders =
+            results.meta.fields ||
+            Object.keys(results.data.find((row) => Object.keys(row).length > 0) || {});
+        }
         for (const r of results.data) {
           if (Object.values(r).some((v) => String(v ?? "").trim())) data.push(r);
         }
@@ -96,29 +133,32 @@ function CsvWizard() {
             phase: "parse",
           });
         }
-        // Update UI at most every 60ms — Papa exposes a cursor
+        // Papa's cursor is character-based while file.size is byte-based, so show rows instead of
+        // a misleading percent during parsing.
         const now = Date.now();
-        const cursor = (results.meta as { cursor?: number }).cursor ?? 0;
         if (now - lastUi > 60) {
           lastUi = now;
           setProgress({
             phase: "parse",
-            current: cursor,
-            total: file.size,
+            current: parsedCount,
+            total: 0,
             message: `Parsed ${parsedCount.toLocaleString()} rows…`,
           });
         }
         // Keep parser alive; chunk mode returns void
         void parser;
       },
-      complete: (res) => {
-        const hs = res.meta.fields || [];
+      complete: () => {
+        const hs = parsedHeaders;
         setRows(data);
         setHeaders(hs);
         setMapping(guessMapping(hs));
         setErrors(parseErrs);
         setProgress(null);
-        if (parseErrs.length) toast.warning(`Parsed with ${parseErrs.length} row issue${parseErrs.length === 1 ? "" : "s"} — see errors below`);
+        if (parseErrs.length)
+          toast.warning(
+            `Parsed with ${parseErrs.length} row issue${parseErrs.length === 1 ? "" : "s"} — see errors below`,
+          );
         setStep(2);
       },
       error: (err) => {
@@ -131,7 +171,8 @@ function CsvWizard() {
   const buildPreviews = async () => {
     const invMap: Partial<Record<ImportFieldKey, string>> = {};
     for (const [h, k] of Object.entries(mapping)) if (k) invMap[k] = h;
-    const pickName = (val: string) => users.find((u) => u.name.toLowerCase() === (val || "").toLowerCase())?.id;
+    const pickName = (val: string) =>
+      users.find((u) => u.name.toLowerCase() === (val || "").toLowerCase())?.id;
 
     const list: PreviewRow[] = [];
     const previewErrs: ImportError[] = [];
@@ -143,11 +184,18 @@ function CsvWizard() {
       try {
         const get = (k: ImportFieldKey) => (invMap[k] ? String(r[invMap[k]!] ?? "").trim() : "");
         const rawStage = get("stage");
-        const stage = (CUSTOMER_STAGES.find((s) => s.toLowerCase() === rawStage.toLowerCase()) || "Existing Customer") as CustomerStage;
+        const stage = (CUSTOMER_STAGES.find((s) => s.toLowerCase() === rawStage.toLowerCase()) ||
+          "Existing Customer") as CustomerStage;
         const priceRaw = get("purchasePrice");
         const priceNum = priceRaw ? Number(priceRaw.replace(/[^0-9.-]/g, "")) : undefined;
         if (priceRaw && (priceNum === undefined || Number.isNaN(priceNum))) {
-          previewErrs.push({ rowIndex: i + 2, name: `${get("firstName")} ${get("lastName")}`.trim(), address: get("propertyAddress"), reason: `Purchase price "${priceRaw}" isn't a number`, phase: "preview" });
+          previewErrs.push({
+            rowIndex: i + 2,
+            name: `${get("firstName")} ${get("lastName")}`.trim(),
+            address: get("propertyAddress"),
+            reason: `Purchase price "${priceRaw}" isn't a number`,
+            phase: "preview",
+          });
         }
         const input: ExistingCustomerInput = {
           firstName: get("firstName"),
@@ -168,14 +216,23 @@ function CsvWizard() {
           lastMaintenance: toISODateOrUndef(get("lastMaintenance")),
           nextMaintenance: toISODateOrUndef(get("nextMaintenance")),
           previousServiceHistory: get("previousServiceHistory"),
-          equipment: get("equipmentType") || get("equipmentModel") || get("equipmentSerial")
-            ? [{ type: get("equipmentType"), model: get("equipmentModel"), serial: get("equipmentSerial"), warrantyExpires: toISODateOrUndef(get("warrantyExpires")) }]
-            : [],
+          equipment:
+            get("equipmentType") || get("equipmentModel") || get("equipmentSerial")
+              ? [
+                  {
+                    type: get("equipmentType"),
+                    model: get("equipmentModel"),
+                    serial: get("equipmentSerial"),
+                    warrantyExpires: toISODateOrUndef(get("warrantyExpires")),
+                  },
+                ]
+              : [],
         };
 
         const missing: string[] = [];
         for (const f of IMPORT_FIELDS) {
-          if (f.required && !(input as unknown as Record<string, unknown>)[f.key]) missing.push(f.label);
+          if (f.required && !(input as unknown as Record<string, unknown>)[f.key])
+            missing.push(f.label);
         }
         const dupes = findDupes({
           firstName: input.firstName,
@@ -194,18 +251,32 @@ function CsvWizard() {
           resolution: missing.length ? "skip" : dup ? "skip" : "create",
         });
       } catch (e) {
-        previewErrs.push({ rowIndex: i + 2, name: "", address: "", reason: e instanceof Error ? e.message : "Unknown parsing error", phase: "preview" });
+        previewErrs.push({
+          rowIndex: i + 2,
+          name: "",
+          address: "",
+          reason: e instanceof Error ? e.message : "Unknown parsing error",
+          phase: "preview",
+        });
       }
 
       if ((i + 1) % CHUNK === 0 || i === rows.length - 1) {
-        setProgress({ phase: "preview", current: i + 1, total: rows.length, message: `Analyzing rows… ${(i + 1).toLocaleString()} / ${rows.length.toLocaleString()}` });
+        setProgress({
+          phase: "preview",
+          current: i + 1,
+          total: rows.length,
+          message: `Analyzing rows… ${(i + 1).toLocaleString()} / ${rows.length.toLocaleString()}`,
+        });
         await yieldToUI();
       }
     }
     setPreviews(list);
     setErrors((prev) => [...prev, ...previewErrs]);
     setProgress(null);
-    if (previewErrs.length) toast.warning(`${previewErrs.length} row${previewErrs.length === 1 ? "" : "s"} had parsing issues`);
+    if (previewErrs.length)
+      toast.warning(
+        `${previewErrs.length} row${previewErrs.length === 1 ? "" : "s"} had parsing issues`,
+      );
     setStep(3);
   };
 
@@ -216,7 +287,11 @@ function CsvWizard() {
     setPreviews((p) => p.map((row) => (row.duplicateId ? { ...row, resolution: res } : row)));
 
   const runImport = async () => {
-    let created = 0, updated = 0, skipped = 0, failed = 0, leadsCreated = 0;
+    let created = 0,
+      updated = 0,
+      skipped = 0,
+      failed = 0,
+      leadsCreated = 0;
     const customerIds: string[] = [];
     const equipmentIds: string[] = [];
     const maintenanceIds: string[] = [];
@@ -225,7 +300,12 @@ function CsvWizard() {
     const saveErrs: ImportError[] = [];
     const CHUNK = 100;
 
-    setProgress({ phase: "save", current: 0, total: previews.length, message: "Saving customers…" });
+    setProgress({
+      phase: "save",
+      current: 0,
+      total: previews.length,
+      message: "Saving customers…",
+    });
 
     for (let i = 0; i < previews.length; i++) {
       const p = previews[i];
@@ -233,10 +313,19 @@ function CsvWizard() {
       try {
         if (p.missing.length) {
           skipped++;
-          saveErrs.push({ rowIndex: i + 2, name: nameStr, address: p.input.propertyAddress || "", reason: `Missing required: ${p.missing.join(", ")}`, phase: "save" });
+          saveErrs.push({
+            rowIndex: i + 2,
+            name: nameStr,
+            address: p.input.propertyAddress || "",
+            reason: `Missing required: ${p.missing.join(", ")}`,
+            phase: "save",
+          });
           continue;
         }
-        if (p.resolution === "skip") { skipped++; continue; }
+        if (p.resolution === "skip") {
+          skipped++;
+          continue;
+        }
         if (p.resolution === "update" && p.duplicateId) {
           updateCustomer(p.duplicateId, {
             phone: p.input.phone || undefined,
@@ -259,16 +348,30 @@ function CsvWizard() {
           equipmentIds.push(...r.equipmentIds);
           maintenanceIds.push(...r.maintenanceIds);
           eventIds.push(...r.eventIds);
-          if (r.leadId) { leadIds.push(r.leadId); leadsCreated++; }
+          if (r.leadId) {
+            leadIds.push(r.leadId);
+            leadsCreated++;
+          }
           created++;
         }
       } catch (e) {
         failed++;
-        saveErrs.push({ rowIndex: i + 2, name: nameStr, address: p.input.propertyAddress || "", reason: e instanceof Error ? e.message : "Unknown save error", phase: "save" });
+        saveErrs.push({
+          rowIndex: i + 2,
+          name: nameStr,
+          address: p.input.propertyAddress || "",
+          reason: e instanceof Error ? e.message : "Unknown save error",
+          phase: "save",
+        });
       }
 
       if ((i + 1) % CHUNK === 0 || i === previews.length - 1) {
-        setProgress({ phase: "save", current: i + 1, total: previews.length, message: `Saving… ${(i + 1).toLocaleString()} / ${previews.length.toLocaleString()}` });
+        setProgress({
+          phase: "save",
+          current: i + 1,
+          total: previews.length,
+          message: `Saving… ${(i + 1).toLocaleString()} / ${previews.length.toLocaleString()}`,
+        });
         await yieldToUI();
       }
     }
@@ -288,9 +391,11 @@ function CsvWizard() {
     setProgress(null);
     setStep(4);
     if (failed > 0) toast.error(`Imported ${created} · ${failed} failed — see error list below`);
-    else toast.success(`Imported ${created} customer${created === 1 ? "" : "s"}${leadsCreated ? ` · ${leadsCreated} lead${leadsCreated === 1 ? "" : "s"}` : ""}`);
+    else
+      toast.success(
+        `Imported ${created} customer${created === 1 ? "" : "s"}${leadsCreated ? ` · ${leadsCreated} lead${leadsCreated === 1 ? "" : "s"}` : ""}`,
+      );
   };
-
 
   const dupeCount = useMemo(() => previews.filter((p) => p.duplicateId).length, [previews]);
 
@@ -302,7 +407,9 @@ function CsvWizard() {
         description="Upload, map columns, resolve duplicates, then review your import report."
         actions={
           <Link to="/import-customers">
-            <Button variant="outline" size="sm"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back
+            </Button>
           </Link>
         }
       />
@@ -310,23 +417,30 @@ function CsvWizard() {
         <StepIndicator step={step} />
         {progress && <ProgressPanel progress={progress} />}
 
-
-
         {step === 1 && (
           <Card>
             <CardContent className="p-6 space-y-4">
-              <div className="text-sm">Start with our template to make column mapping automatic, or upload your own spreadsheet.</div>
+              <div className="text-sm">
+                Start with our template to make column mapping automatic, or upload your own
+                spreadsheet.
+              </div>
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" onClick={download}><Download className="h-4 w-4 mr-1" /> Download CSV template</Button>
+                <Button variant="outline" onClick={download}>
+                  <Download className="h-4 w-4 mr-1" /> Download CSV template
+                </Button>
               </div>
               <label className="mt-4 flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-10 cursor-pointer hover:bg-muted/50">
                 <Upload className="h-8 w-8 text-muted-foreground mb-2" />
                 <div className="text-sm font-medium">Click to upload a CSV file</div>
                 <div className="text-xs text-muted-foreground">or drag and drop</div>
                 <input
+                  id="existing-customers-csv"
                   type="file"
                   accept=".csv,text/csv"
-                  className="hidden"
+                  className="sr-only"
+                  onClick={(e) => {
+                    e.currentTarget.value = "";
+                  }}
                   onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
                 />
               </label>
@@ -338,7 +452,8 @@ function CsvWizard() {
           <Card>
             <CardContent className="p-6 space-y-4">
               <div className="text-sm">
-                <span className="font-medium">{rows.length}</span> row{rows.length === 1 ? "" : "s"} detected in <em>{filename}</em>. Match each spreadsheet column to a CRM field.
+                <span className="font-medium">{rows.length}</span> row{rows.length === 1 ? "" : "s"}{" "}
+                detected in <em>{filename}</em>. Match each spreadsheet column to a CRM field.
               </div>
               <div className="border rounded overflow-x-auto">
                 <table className="w-full text-sm">
@@ -353,14 +468,29 @@ function CsvWizard() {
                     {headers.map((h) => (
                       <tr key={h} className="border-t">
                         <td className="p-2 font-medium">{h}</td>
-                        <td className="p-2 text-muted-foreground truncate max-w-[220px]">{rows[0]?.[h] || <span className="italic">empty</span>}</td>
+                        <td className="p-2 text-muted-foreground truncate max-w-[220px]">
+                          {rows[0]?.[h] || <span className="italic">empty</span>}
+                        </td>
                         <td className="p-2">
-                          <Select value={mapping[h] || "__none"} onValueChange={(v) => setMapping({ ...mapping, [h]: v === "__none" ? "" : (v as ImportFieldKey) })}>
-                            <SelectTrigger className="h-8"><SelectValue placeholder="Ignore" /></SelectTrigger>
+                          <Select
+                            value={mapping[h] || "__none"}
+                            onValueChange={(v) =>
+                              setMapping({
+                                ...mapping,
+                                [h]: v === "__none" ? "" : (v as ImportFieldKey),
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-8">
+                              <SelectValue placeholder="Ignore" />
+                            </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="__none">— Ignore —</SelectItem>
                               {IMPORT_FIELDS.map((f) => (
-                                <SelectItem key={f.key} value={f.key}>{f.label}{f.required ? " *" : ""}</SelectItem>
+                                <SelectItem key={f.key} value={f.key}>
+                                  {f.label}
+                                  {f.required ? " *" : ""}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -371,128 +501,194 @@ function CsvWizard() {
                 </table>
               </div>
               <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
-                <Button onClick={buildPreviews} disabled={!!progress}>{progress?.phase === "preview" ? "Analyzing…" : "Preview →"}</Button>
+                <Button variant="outline" onClick={() => setStep(1)}>
+                  Back
+                </Button>
+                <Button onClick={buildPreviews} disabled={!!progress}>
+                  {progress?.phase === "preview" ? "Analyzing…" : "Preview →"}
+                </Button>
               </div>
             </CardContent>
           </Card>
         )}
 
-        {step === 3 && (() => {
-          const junkRe = /^\s*(?:[^A-Za-z]|1st\b|2nd\b|3rd\b|4th\b|test\b|info\b)/i;
-          const isJunk = (p: PreviewRow) => {
-            const name = `${p.input.firstName || ""} ${p.input.lastName || ""}`.trim();
-            return !!name && junkRe.test(name);
-          };
-          const junkIdx = previews.map((p, i) => (isJunk(p) ? i : -1)).filter((i) => i >= 0);
-          const junkCount = junkIdx.length;
-          const skipJunk = () =>
-            setPreviews((ps) => ps.map((p, i) => (junkIdx.includes(i) ? { ...p, resolution: "skip" as Resolution } : p)));
-          const restoreJunk = () =>
-            setPreviews((ps) =>
-              ps.map((p, i) =>
-                junkIdx.includes(i) && !p.missing.length
-                  ? { ...p, resolution: (p.duplicateId ? "skip" : "create") as Resolution }
-                  : p
-              )
+        {step === 3 &&
+          (() => {
+            const junkRe = /^\s*(?:[^A-Za-z]|1st\b|2nd\b|3rd\b|4th\b|test\b|info\b)/i;
+            const isJunk = (p: PreviewRow) => {
+              const name = `${p.input.firstName || ""} ${p.input.lastName || ""}`.trim();
+              return !!name && junkRe.test(name);
+            };
+            const junkIdx = previews.map((p, i) => (isJunk(p) ? i : -1)).filter((i) => i >= 0);
+            const junkCount = junkIdx.length;
+            const skipJunk = () =>
+              setPreviews((ps) =>
+                ps.map((p, i) =>
+                  junkIdx.includes(i) ? { ...p, resolution: "skip" as Resolution } : p,
+                ),
+              );
+            const restoreJunk = () =>
+              setPreviews((ps) =>
+                ps.map((p, i) =>
+                  junkIdx.includes(i) && !p.missing.length
+                    ? { ...p, resolution: (p.duplicateId ? "skip" : "create") as Resolution }
+                    : p,
+                ),
+              );
+            return (
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-sm">
+                      <span className="font-medium">{previews.length}</span> rows ·{" "}
+                      {previews.filter((p) => !p.missing.length && !p.duplicateId).length} valid ·{" "}
+                      {dupeCount} duplicate · {previews.filter((p) => p.missing.length).length} with
+                      missing data
+                      {junkCount > 0 ? (
+                        <>
+                          {" "}
+                          · <span className="text-warning-foreground">{junkCount} junk names</span>
+                        </>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {junkCount > 0 && (
+                        <>
+                          <span className="text-muted-foreground self-center">
+                            Junk names ({junkCount}):
+                          </span>
+                          <Button size="sm" variant="outline" onClick={skipJunk}>
+                            Skip all
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={restoreJunk}>
+                            Restore
+                          </Button>
+                        </>
+                      )}
+                      {dupeCount > 0 && (
+                        <>
+                          <span className="text-muted-foreground self-center ml-2">
+                            Duplicates:
+                          </span>
+                          <Button size="sm" variant="outline" onClick={() => bulkResolve("skip")}>
+                            Skip all
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => bulkResolve("update")}>
+                            Update all
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => bulkResolve("create")}>
+                            Create all
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    "Junk names" are contacts whose name starts with punctuation, a digit, or
+                    prefixes like "1st", "2nd", "test", "info" — common Google Contacts placeholders
+                    that aren't real people.
+                  </p>
+                  <label className="flex items-start gap-2 rounded border bg-muted/30 p-3 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-4 w-4 accent-primary"
+                      checked={alsoCreateLeads}
+                      onChange={(e) => setAlsoCreateLeads(e.target.checked)}
+                    />
+                    <span>
+                      <span className="font-medium">Also create a sales lead</span> for every new
+                      customer imported (status "New Lead"). Useful when you want to nurture
+                      imported contacts through the sales pipeline.
+                    </span>
+                  </label>
+                  <div className="border rounded overflow-x-auto max-h-[520px]">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50 text-xs sticky top-0">
+                        <tr>
+                          <th className="text-left p-2">Name</th>
+                          <th className="text-left p-2">Contact</th>
+                          <th className="text-left p-2">Property address</th>
+                          <th className="text-left p-2">Stage</th>
+                          <th className="text-left p-2">Status</th>
+                          <th className="text-left p-2">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {previews.map((p, i) => {
+                          const junk = isJunk(p);
+                          return (
+                            <tr key={i} className="border-t align-top">
+                              <td className="p-2">
+                                {p.input.firstName} {p.input.lastName}
+                                {junk && (
+                                  <Badge
+                                    variant="outline"
+                                    className="ml-2 text-[10px] border-warning/40 text-warning-foreground"
+                                  >
+                                    junk?
+                                  </Badge>
+                                )}
+                              </td>
+                              <td className="p-2 text-xs text-muted-foreground">
+                                {p.input.phone}
+                                <br />
+                                {p.input.email}
+                              </td>
+                              <td className="p-2 text-xs">{p.input.propertyAddress}</td>
+                              <td className="p-2 text-xs">{p.input.stage}</td>
+                              <td className="p-2 text-xs">
+                                {p.missing.length ? (
+                                  <Badge variant="destructive">
+                                    Missing: {p.missing.join(", ")}
+                                  </Badge>
+                                ) : p.duplicateId ? (
+                                  <Badge className="bg-warning/20 text-warning-foreground border border-warning/40">
+                                    Duplicate · {p.duplicateReasons?.join(", ")}
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-primary/10 text-primary border border-primary/30">
+                                    Valid
+                                  </Badge>
+                                )}
+                              </td>
+                              <td className="p-2">
+                                <Select
+                                  value={p.resolution}
+                                  onValueChange={(v) => setResolution(i, v as Resolution)}
+                                  disabled={!!p.missing.length}
+                                >
+                                  <SelectTrigger className="h-8 w-[130px]">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="create">Create new</SelectItem>
+                                    <SelectItem value="update" disabled={!p.duplicateId}>
+                                      Update existing
+                                    </SelectItem>
+                                    <SelectItem value="skip">Skip</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex justify-between">
+                    <Button variant="outline" onClick={() => setStep(2)}>
+                      Back
+                    </Button>
+                    <Button onClick={runImport} disabled={!!progress}>
+                      {progress?.phase === "save"
+                        ? "Saving…"
+                        : `Import ${previews.filter((p) => p.resolution !== "skip" && !p.missing.length).length} rows`}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             );
-          return (
-          <Card>
-            <CardContent className="p-6 space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="text-sm">
-                  <span className="font-medium">{previews.length}</span> rows · {previews.filter((p) => !p.missing.length && !p.duplicateId).length} valid · {dupeCount} duplicate · {previews.filter((p) => p.missing.length).length} with missing data{junkCount > 0 ? <> · <span className="text-warning-foreground">{junkCount} junk names</span></> : null}
-                </div>
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {junkCount > 0 && (
-                    <>
-                      <span className="text-muted-foreground self-center">Junk names ({junkCount}):</span>
-                      <Button size="sm" variant="outline" onClick={skipJunk}>Skip all</Button>
-                      <Button size="sm" variant="outline" onClick={restoreJunk}>Restore</Button>
-                    </>
-                  )}
-                  {dupeCount > 0 && (
-                    <>
-                      <span className="text-muted-foreground self-center ml-2">Duplicates:</span>
-                      <Button size="sm" variant="outline" onClick={() => bulkResolve("skip")}>Skip all</Button>
-                      <Button size="sm" variant="outline" onClick={() => bulkResolve("update")}>Update all</Button>
-                      <Button size="sm" variant="outline" onClick={() => bulkResolve("create")}>Create all</Button>
-                    </>
-                  )}
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                "Junk names" are contacts whose name starts with punctuation, a digit, or prefixes like "1st", "2nd", "test", "info" — common Google Contacts placeholders that aren't real people.
-              </p>
-              <label className="flex items-start gap-2 rounded border bg-muted/30 p-3 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 h-4 w-4 accent-primary"
-                  checked={alsoCreateLeads}
-                  onChange={(e) => setAlsoCreateLeads(e.target.checked)}
-                />
-                <span>
-                  <span className="font-medium">Also create a sales lead</span> for every new customer imported (status "New Lead"). Useful when you want to nurture imported contacts through the sales pipeline.
-                </span>
-              </label>
-              <div className="border rounded overflow-x-auto max-h-[520px]">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50 text-xs sticky top-0">
-                    <tr>
-                      <th className="text-left p-2">Name</th>
-                      <th className="text-left p-2">Contact</th>
-                      <th className="text-left p-2">Property address</th>
-                      <th className="text-left p-2">Stage</th>
-                      <th className="text-left p-2">Status</th>
-                      <th className="text-left p-2">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {previews.map((p, i) => {
-                      const junk = isJunk(p);
-                      return (
-                      <tr key={i} className="border-t align-top">
-                        <td className="p-2">
-                          {p.input.firstName} {p.input.lastName}
-                          {junk && <Badge variant="outline" className="ml-2 text-[10px] border-warning/40 text-warning-foreground">junk?</Badge>}
-                        </td>
-                        <td className="p-2 text-xs text-muted-foreground">{p.input.phone}<br />{p.input.email}</td>
-                        <td className="p-2 text-xs">{p.input.propertyAddress}</td>
-                        <td className="p-2 text-xs">{p.input.stage}</td>
-                        <td className="p-2 text-xs">
-                          {p.missing.length ? (
-                            <Badge variant="destructive">Missing: {p.missing.join(", ")}</Badge>
-                          ) : p.duplicateId ? (
-                            <Badge className="bg-warning/20 text-warning-foreground border border-warning/40">Duplicate · {p.duplicateReasons?.join(", ")}</Badge>
-                          ) : (
-                            <Badge className="bg-primary/10 text-primary border border-primary/30">Valid</Badge>
-                          )}
-                        </td>
-                        <td className="p-2">
-                          <Select value={p.resolution} onValueChange={(v) => setResolution(i, v as Resolution)} disabled={!!p.missing.length}>
-                            <SelectTrigger className="h-8 w-[130px]"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="create">Create new</SelectItem>
-                              <SelectItem value="update" disabled={!p.duplicateId}>Update existing</SelectItem>
-                              <SelectItem value="skip">Skip</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </td>
-                      </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
-                <Button onClick={runImport} disabled={!!progress}>{progress?.phase === "save" ? "Saving…" : `Import ${previews.filter((p) => p.resolution !== "skip" && !p.missing.length).length} rows`}</Button>
-              </div>
-            </CardContent>
-          </Card>
-          );
-        })()}
-
+          })()}
 
         {step === 4 && report && (
           <Card>
@@ -505,13 +701,24 @@ function CsvWizard() {
                 <Stat label="Failed" n={report.failed} tone="bad" />
               </div>
               <div className="text-sm text-muted-foreground">
-                Imported customers are tagged as <em>Historical data</em>. Property addresses were geocoded and pinned on the map; future installations and maintenance were added to the calendar{report.leads > 0 ? "; new sales leads were created in the pipeline" : ""}.
+                Imported customers are tagged as <em>Historical data</em>. Property addresses were
+                geocoded and pinned on the map; future installations and maintenance were added to
+                the calendar
+                {report.leads > 0 ? "; new sales leads were created in the pipeline" : ""}.
               </div>
               <ErrorList errors={errors} />
               <div className="flex flex-wrap gap-2">
-                <Link to="/customers"><Button variant="outline">View customers</Button></Link>
-                {report.leads > 0 && <Link to="/leads"><Button variant="outline">View leads</Button></Link>}
-                <Link to="/map"><Button variant="outline">Open map</Button></Link>
+                <Link to="/customers">
+                  <Button variant="outline">View customers</Button>
+                </Link>
+                {report.leads > 0 && (
+                  <Link to="/leads">
+                    <Button variant="outline">View leads</Button>
+                  </Link>
+                )}
+                <Link to="/map">
+                  <Button variant="outline">Open map</Button>
+                </Link>
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -529,7 +736,6 @@ function CsvWizard() {
             </CardContent>
           </Card>
         )}
-
       </Section>
     </>
   );
@@ -545,7 +751,9 @@ function StepIndicator({ step }: { step: 1 | 2 | 3 | 4 }) {
         const done = n < step;
         return (
           <div key={l} className="flex items-center gap-2">
-            <div className={`h-6 w-6 rounded-full grid place-items-center text-[10px] font-semibold ${active ? "bg-primary text-primary-foreground" : done ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}>
+            <div
+              className={`h-6 w-6 rounded-full grid place-items-center text-[10px] font-semibold ${active ? "bg-primary text-primary-foreground" : done ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`}
+            >
               {n}
             </div>
             <div className={active ? "font-medium" : "text-muted-foreground"}>{l}</div>
@@ -559,7 +767,8 @@ function StepIndicator({ step }: { step: 1 | 2 | 3 | 4 }) {
 
 function Stat({ label, n, tone }: { label: string; n: number; tone: "ok" | "warn" | "bad" }) {
   const Icon = tone === "ok" ? CheckCircle2 : tone === "warn" ? AlertCircle : XCircle;
-  const color = tone === "ok" ? "text-primary" : tone === "warn" ? "text-warning" : "text-destructive";
+  const color =
+    tone === "ok" ? "text-primary" : tone === "warn" ? "text-warning" : "text-destructive";
   return (
     <div className="border rounded p-4">
       <div className="flex items-center gap-2">
@@ -572,8 +781,14 @@ function Stat({ label, n, tone }: { label: string; n: number; tone: "ok" | "warn
 }
 
 function ProgressPanel({ progress }: { progress: NonNullable<Progress> }) {
-  const pct = progress.total > 0 ? Math.min(100, Math.round((progress.current / progress.total) * 100)) : 0;
-  const phaseLabel = progress.phase === "parse" ? "Parsing CSV" : progress.phase === "preview" ? "Analyzing rows" : "Saving customers";
+  const pct =
+    progress.total > 0 ? Math.min(100, Math.round((progress.current / progress.total) * 100)) : 0;
+  const phaseLabel =
+    progress.phase === "parse"
+      ? "Parsing CSV"
+      : progress.phase === "preview"
+        ? "Analyzing rows"
+        : "Saving customers";
   return (
     <Card>
       <CardContent className="p-4 space-y-2">
@@ -581,9 +796,19 @@ function ProgressPanel({ progress }: { progress: NonNullable<Progress> }) {
           <Loader2 className="h-4 w-4 animate-spin text-primary" />
           <span className="font-medium">{phaseLabel}</span>
           <span className="text-muted-foreground">— {progress.message}</span>
-          <span className="ml-auto text-xs tabular-nums text-muted-foreground">{pct}%</span>
+          {progress.phase === "parse" ? (
+            <span className="ml-auto text-xs text-muted-foreground">Working…</span>
+          ) : (
+            <span className="ml-auto text-xs tabular-nums text-muted-foreground">{pct}%</span>
+          )}
         </div>
-        <Progress value={pct} />
+        {progress.phase === "parse" ? (
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-primary/20">
+            <div className="h-full w-1/2 animate-pulse rounded-full bg-primary" />
+          </div>
+        ) : (
+          <Progress value={pct} />
+        )}
       </CardContent>
     </Card>
   );
@@ -623,7 +848,9 @@ function ErrorList({ errors }: { errors: ImportError[] }) {
                 <td className="p-2 capitalize">{e.phase}</td>
                 <td className="p-2">
                   <div className="font-medium">{e.name || "—"}</div>
-                  {e.address && <div className="text-muted-foreground truncate max-w-[240px]">{e.address}</div>}
+                  {e.address && (
+                    <div className="text-muted-foreground truncate max-w-[240px]">{e.address}</div>
+                  )}
                 </td>
                 <td className="p-2 text-destructive">{e.reason}</td>
               </tr>
@@ -634,4 +861,3 @@ function ErrorList({ errors }: { errors: ImportError[] }) {
     </div>
   );
 }
-

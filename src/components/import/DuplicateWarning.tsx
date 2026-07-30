@@ -19,7 +19,10 @@ export function DuplicateWarning({
       <AlertDescription>
         <div className="mt-2 space-y-2">
           {matches.slice(0, 4).map((m) => (
-            <div key={m.customer.id} className="flex flex-wrap items-center justify-between gap-2 rounded border bg-background p-2">
+            <div
+              key={m.customer.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded border bg-background p-2"
+            >
               <div className="min-w-0">
                 <div className="font-medium text-sm">
                   {m.customer.firstName} {m.customer.lastName}
@@ -27,12 +30,18 @@ export function DuplicateWarning({
                 <div className="text-xs text-muted-foreground truncate">
                   {m.customer.phone} · {m.customer.email}
                 </div>
-                <div className="text-xs text-muted-foreground truncate">{m.customer.propertyAddress}</div>
-                <div className="text-[11px] text-warning-foreground mt-1">Match: {m.reasons.join(", ")}</div>
+                <div className="text-xs text-muted-foreground truncate">
+                  {m.customer.propertyAddress}
+                </div>
+                <div className="text-[11px] text-warning-foreground mt-1">
+                  Match: {m.reasons.join(", ")}
+                </div>
               </div>
               <div className="flex gap-2 shrink-0">
                 <Link to="/customers/$id" params={{ id: m.customer.id }}>
-                  <Button size="sm" variant="outline">View</Button>
+                  <Button size="sm" variant="outline">
+                    View
+                  </Button>
                 </Link>
                 {onUpdateExisting && (
                   <Button size="sm" onClick={() => onUpdateExisting(m.customer.id)}>

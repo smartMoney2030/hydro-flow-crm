@@ -8,12 +8,60 @@ import { Droplet } from "lucide-react";
 
 export const Route = createFileRoute("/map")({ component: MapPage });
 
-const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
-const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as string | undefined;
+const BROWSER_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as
+  | string
+  | undefined;
+const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as
+  | string
+  | undefined;
+
+type LatLngLiteral = { lat: number; lng: number };
+type GoogleMap = {
+  fitBounds: (bounds: GoogleLatLngBounds, padding?: number) => void;
+};
+type GoogleMarker = {
+  setMap: (map: GoogleMap | null) => void;
+  addListener: (eventName: string, handler: () => void) => void;
+};
+type GoogleLatLngBounds = {
+  extend: (point: LatLngLiteral) => void;
+};
+type GoogleMapsNamespace = {
+  Map: new (
+    element: HTMLElement,
+    options: {
+      center: LatLngLiteral;
+      zoom: number;
+      mapTypeControl: boolean;
+      streetViewControl: boolean;
+      fullscreenControl: boolean;
+    },
+  ) => GoogleMap;
+  Marker: new (options: {
+    position: LatLngLiteral;
+    map: GoogleMap | null;
+    title: string;
+    icon: {
+      path: symbol;
+      scale: number;
+      fillColor: string;
+      fillOpacity: number;
+      strokeColor: string;
+      strokeWeight: number;
+    };
+  }) => GoogleMarker;
+  LatLngBounds: new () => GoogleLatLngBounds;
+  SymbolPath: {
+    CIRCLE: symbol;
+  };
+};
+type GoogleMapsGlobal = {
+  maps: GoogleMapsNamespace;
+};
 
 declare global {
   interface Window {
-    google?: any;
+    google?: GoogleMapsGlobal;
     __initMWPMap?: () => void;
     __mwpMapReady?: boolean;
   }
@@ -36,7 +84,12 @@ function loadGoogleMaps(): Promise<void> {
     }
     const s = document.createElement("script");
     s.id = "google-maps-js";
-    const params = new URLSearchParams({ key: BROWSER_KEY, loading: "async", callback: "__initMWPMap", libraries: "marker" });
+    const params = new URLSearchParams({
+      key: BROWSER_KEY,
+      loading: "async",
+      callback: "__initMWPMap",
+      libraries: "marker",
+    });
     if (TRACKING_ID) params.set("channel", TRACKING_ID);
     s.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
     s.async = true;
@@ -52,8 +105,8 @@ function MapPage() {
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const mapDivRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
+  const mapRef = useRef<GoogleMap | null>(null);
+  const markersRef = useRef<GoogleMarker[]>([]);
 
   const shown = useMemo(() => {
     return s.customers.filter((c) => {
@@ -62,7 +115,11 @@ function MapPage() {
         return !!j;
       }
       if (filter === "maintenance-due") {
-        return s.maintenance.some((m) => m.customerId === c.id && ["Due Within 7 Days", "Due Within 30 Days", "Maintenance Overdue"].includes(m.status));
+        return s.maintenance.some(
+          (m) =>
+            m.customerId === c.id &&
+            ["Due Within 7 Days", "Due Within 30 Days", "Maintenance Overdue"].includes(m.status),
+        );
       }
       return true;
     });
@@ -96,7 +153,9 @@ function MapPage() {
     markersRef.current = [];
     const bounds = new window.google.maps.LatLngBounds();
     shown.forEach((c) => {
-      const overdue = s.maintenance.some((m) => m.customerId === c.id && m.status === "Maintenance Overdue");
+      const overdue = s.maintenance.some(
+        (m) => m.customerId === c.id && m.status === "Maintenance Overdue",
+      );
       const color = overdue ? "#dc2626" : "#0891b2";
       const marker = new window.google.maps.Marker({
         position: { lat: c.lat, lng: c.lng },
@@ -120,15 +179,30 @@ function MapPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Field" title="Map" description="San Antonio service area · powered by Google Maps." />
+      <PageHeader
+        eyebrow="Field"
+        title="Map"
+        description="San Antonio service area · powered by Google Maps."
+      />
       <Section className="space-y-3">
         <div className="flex flex-wrap gap-2">
           {(["all", "unscheduled", "maintenance-due"] as const).map((f) => (
-            <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)}>
-              {f === "all" ? "All customers" : f === "unscheduled" ? "Unscheduled installs" : "Maintenance due"}
+            <Button
+              key={f}
+              size="sm"
+              variant={filter === f ? "default" : "outline"}
+              onClick={() => setFilter(f)}
+            >
+              {f === "all"
+                ? "All customers"
+                : f === "unscheduled"
+                  ? "Unscheduled installs"
+                  : "Maintenance due"}
             </Button>
           ))}
-          <span className="ml-auto text-xs text-muted-foreground self-center">{shown.length} pins</span>
+          <span className="ml-auto text-xs text-muted-foreground self-center">
+            {shown.length} pins
+          </span>
         </div>
 
         <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -156,18 +230,31 @@ function MapPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Droplet className="h-4 w-4 text-primary" />
-                    <div className="font-semibold">{sel.firstName} {sel.lastName}</div>
+                    <div className="font-semibold">
+                      {sel.firstName} {sel.lastName}
+                    </div>
                   </div>
                   <div className="text-xs text-muted-foreground">{sel.propertyAddress}</div>
-                  <div className="text-xs">{sel.phone} · {sel.email}</div>
-                  <Link to="/customers/$id" params={{ id: sel.id }} className="inline-block mt-2 text-xs text-primary hover:underline">Open profile →</Link>
+                  <div className="text-xs">
+                    {sel.phone} · {sel.email}
+                  </div>
+                  <Link
+                    to="/customers/$id"
+                    params={{ id: sel.id }}
+                    className="inline-block mt-2 text-xs text-primary hover:underline"
+                  >
+                    Open profile →
+                  </Link>
                 </div>
               ) : (
-                <div className="text-sm text-muted-foreground">Click a pin to see customer details, or use filters to plan a route.</div>
+                <div className="text-sm text-muted-foreground">
+                  Click a pin to see customer details, or use filters to plan a route.
+                </div>
               )}
               <div className="mt-4 pt-4 border-t text-xs text-muted-foreground">
                 <div className="font-medium text-foreground mb-1">Route planning</div>
-                Select multiple nearby customers to auto-order a route with estimated travel times (demo).
+                Select multiple nearby customers to auto-order a route with estimated travel times
+                (demo).
               </div>
             </CardContent>
           </Card>

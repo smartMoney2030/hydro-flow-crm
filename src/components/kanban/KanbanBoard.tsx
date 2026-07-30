@@ -69,18 +69,37 @@ export function KanbanBoard<T extends KanbanItem>({
           );
         })}
       </div>
-      <DragOverlay>{active ? <div className="rotate-2 opacity-95">{renderCard(active)}</div> : null}</DragOverlay>
+      <DragOverlay>
+        {active ? <div className="rotate-2 opacity-95">{renderCard(active)}</div> : null}
+      </DragOverlay>
     </DndContext>
   );
 }
 
-function Column({ id, count, children, accent }: { id: string; count: number; children: ReactNode; accent?: string }) {
+function Column({
+  id,
+  count,
+  children,
+  accent,
+}: {
+  id: string;
+  count: number;
+  children: ReactNode;
+  accent?: string;
+}) {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
     <div className="w-72 shrink-0 flex flex-col">
-      <div className={cn("px-3 py-2 rounded-t-lg font-medium text-sm flex items-center justify-between border-b-2", accent || "border-primary/40 bg-muted/60")}>
+      <div
+        className={cn(
+          "px-3 py-2 rounded-t-lg font-medium text-sm flex items-center justify-between border-b-2",
+          accent || "border-primary/40 bg-muted/60",
+        )}
+      >
         <span className="truncate">{id}</span>
-        <span className="text-xs text-muted-foreground bg-background/70 rounded-full px-2 py-0.5">{count}</span>
+        <span className="text-xs text-muted-foreground bg-background/70 rounded-full px-2 py-0.5">
+          {count}
+        </span>
       </div>
       <div
         ref={setNodeRef}
@@ -102,7 +121,10 @@ function DraggableCard({ id, children }: { id: string; children: ReactNode }) {
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={cn("cursor-grab active:cursor-grabbing shadow-sm hover:shadow-card transition-shadow", isDragging && "opacity-40")}
+      className={cn(
+        "cursor-grab active:cursor-grabbing shadow-sm hover:shadow-card transition-shadow",
+        isDragging && "opacity-40",
+      )}
     >
       {children}
     </Card>
