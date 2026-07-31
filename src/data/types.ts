@@ -196,6 +196,17 @@ export interface Equipment {
   notes: string;
 }
 
+export interface EquipmentCatalogItem {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  sizes?: string[];
+  imageUrl?: string;
+  active: boolean;
+  createdAt?: string;
+}
+
 export interface MaintenanceVisit {
   id: string;
   customerId: string;

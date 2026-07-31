@@ -22,6 +22,7 @@ import type {
   Task,
   User,
   InventoryItem,
+  EquipmentCatalogItem,
 } from "@/data/types";
 import { addYear, findDuplicates, geocode, type DuplicateMatch } from "@/lib/import";
 import {
@@ -30,6 +31,7 @@ import {
   automationRuns as seedRuns,
   customers as seedCustomers,
   equipment as seedEquipment,
+  equipmentCatalog as seedEquipmentCatalog,
   events as seedEvents,
   installations as seedInstalls,
   jobs as seedJobs,
@@ -60,6 +62,11 @@ interface CRMState {
   automationRuns: AutomationRun[];
   importBatches: ImportBatch[];
   inventory: InventoryItem[];
+  equipmentCatalog: EquipmentCatalogItem[];
+
+  addCatalogItem: (item: Omit<EquipmentCatalogItem, "id" | "active">) => EquipmentCatalogItem;
+  updateCatalogItem: (id: string, patch: Partial<EquipmentCatalogItem>) => void;
+  removeCatalogItem: (id: string) => void;
 
   addInventoryItem: (item: Omit<InventoryItem, "id" | "updatedAt">) => InventoryItem;
   updateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
@@ -156,6 +163,7 @@ export const useCRM = create<CRMState>((set, get) => ({
   supplyOrders: [],
   installations: [],
   equipment: [],
+  equipmentCatalog: seedEquipmentCatalog,
   maintenance: [],
   tasks: [],
   events: [],
@@ -458,6 +466,25 @@ export const useCRM = create<CRMState>((set, get) => ({
   removeUser: (id) => {
     set((s) => ({ users: s.users.filter((u) => u.id !== id) }));
     get().addAudit({ actorId: get().currentUserId, action: "deleted", entity: "User", entityId: id, detail: "Team member removed" });
+  },
+  addCatalogItem: (itemInput) => {
+    const newItem: EquipmentCatalogItem = {
+      id: uid("eq-cat"),
+      ...itemInput,
+      active: true,
+      createdAt: new Date().toISOString(),
+    };
+    set((s) => ({ equipmentCatalog: [newItem, ...s.equipmentCatalog] }));
+    get().addAudit({ actorId: get().currentUserId, action: "created", entity: "EquipmentCatalog", entityId: newItem.id, detail: newItem.name });
+    return newItem;
+  },
+  updateCatalogItem: (id, patch) => {
+    set((s) => ({ equipmentCatalog: s.equipmentCatalog.map((item) => (item.id === id ? { ...item, ...patch } : item)) }));
+    get().addAudit({ actorId: get().currentUserId, action: "updated", entity: "EquipmentCatalog", entityId: id, detail: "Catalog item updated" });
+  },
+  removeCatalogItem: (id) => {
+    set((s) => ({ equipmentCatalog: s.equipmentCatalog.filter((item) => item.id !== id) }));
+    get().addAudit({ actorId: get().currentUserId, action: "deleted", entity: "EquipmentCatalog", entityId: id, detail: "Catalog item removed" });
   },
   addAutomationRun: (r) =>
     set((s) => ({
