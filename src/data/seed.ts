@@ -444,5 +444,14 @@ export const equipmentCatalog: EquipmentCatalogItem[] = [
     imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80",
     active: true,
   },
+  {
+    id: "eq-cat-17",
+    name: "Spigot",
+    category: "Accessories & Fixtures",
+    description: "Dedicated reverse osmosis drinking water faucet / spigot available in custom designer finishes.",
+    sizes: ["Basic", "Brushed Nickel", "Chrome", "Brass", "Other"],
+    imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80",
+    active: true,
+  },
 ];
 
