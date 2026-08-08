@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hydro Flow CRM - Equipment Catalog & Management</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Hydro Flow CRM Equipment Management & Sales Catalog for Water Treatment Systems, Softeners, Filters, and Accessories." />
+  
+  <!-- Google Fonts & Tailwind CSS CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .glass-header {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased bg-slate-50 text-slate-900">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 glass-header border-b border-slate-200/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo & Branding -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+            <i data-lucide="droplets" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-600 bg-clip-text text-transparent">
+              Hydro Flow CRM
+            </span>
+            <span class="block text-[11px] font-medium text-slate-500 -mt-1">Water Treatment Platform</span>
+          </div>
+        </div>
+
+        <!-- Right Header Action -->
+        <div class="flex items-center gap-3">
+          <button id="openAddModalBtn" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-sm transition-all hover:shadow-md">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Equipment</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Page Header & Overview -->
+    <div class="mb-8">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100">
+            Inventory & Catalog
+          </span>
+          <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-2">Equipment Management</h1>
+          <p class="text-sm text-slate-600 mt-1" id="statsSubtitle">
+            Loading catalog items...
+          </p>
+        </div>
+
+        <!-- Quick Search & Category Filter Controls -->
+        <div class="flex flex-col sm:flex-row gap-2.5 w-full md:w-auto">
+          <div class="relative flex-1 sm:w-64">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+            <input 
+              type="text" 
+              id="searchInput"
+              placeholder="Search equipment..."
+              class="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-xs"
+            />
+          </div>
+
+          <div class="relative sm:w-48">
+            <select 
+              id="categoryFilter"
+              class="w-full appearance-none bg-white border border-slate-300 rounded-lg px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-xs cursor-pointer"
+            >
+              <option value="all">All Categories</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-2.5 top-3 pointer-events-none"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="border-b border-slate-200 mb-6">
+      <nav class="flex space-x-6" aria-label="Tabs">
+        <button id="tabCatalogBtn" class="border-blue-600 text-blue-600 flex items-center gap-2 py-3 px-1 border-b-2 font-semibold text-sm transition-colors">
+          <i data-lucide="package" class="w-4 h-4"></i>
+          <span>Equipment Catalog (<span id="catalogCount">0</span>)</span>
+        </button>
+        <button id="tabInstalledBtn" class="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center gap-2 py-3 px-1 border-b-2 font-medium text-sm transition-colors">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+          <span>Customer Installed Units (32)</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- TAB 1: Equipment Catalog Grid View -->
+    <div id="tabCatalogView">
+      <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <!-- Cards rendered dynamically via JS -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyCatalogState" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300">
+        <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3">
+          <i data-lucide="package-open" class="w-6 h-6"></i>
+        </div>
+        <h3 class="font-semibold text-slate-800 text-base">No equipment items found</h3>
+        <p class="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-4" id="emptyStateMsg">
+          No catalog items match your search filter.
+        </p>
+        <button id="emptyAddBtn" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add New Equipment
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 2: Customer Installed Units -->
+    <div id="tabInstalledView" class="hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="installedUnitsGrid">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Equipment Modal Dialog -->
+  <div id="addModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100 p-6 relative animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Close Button -->
+      <button id="closeAddModalBtn" class="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-2 mb-1">
+        <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+        </div>
+        <h2 class="text-xl font-bold text-slate-900">Add New Equipment</h2>
+      </div>
+      <p class="text-xs text-slate-500 mb-5">Add a new water treatment product or attachment to your sales catalog with photos, descriptions, and size variations.</p>
+
+      <form id="addEquipmentForm" class="space-y-4">
+        <!-- Photo Selection -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Product Photo</label>
+          <div id="imagePreviewContainer" class="relative w-full h-40 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 mb-2">
+            <img id="imagePreview" src="https://images.unsplash.com/photo-1548839140-29a749e1cf4e?w=600&auto=format&fit=crop&q=80" alt="Preview" class="w-full h-full object-cover" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mb-2">
+            <label class="flex items-center justify-center gap-2 border border-dashed border-slate-300 rounded-lg p-2 cursor-pointer hover:bg-slate-50 text-xs font-medium text-slate-700 transition-colors">
+              <i data-lucide="upload" class="w-4 h-4 text-blue-600"></i>
+              <span>Upload Photo</span>
+              <input type="file" id="fileInput" accept="image/*" class="hidden" />
+            </label>
+
+            <button type="button" id="toggleUrlInputBtn" class="flex items-center justify-center gap-1.5 border border-slate-200 rounded-lg p-2 hover:bg-slate-50 text-xs font-medium text-slate-700">
+              <i data-lucide="image" class="w-4 h-4 text-blue-600"></i>
+              <span>Image URL</span>
+            </button>
+          </div>
+
+          <input type="url" id="imageUrlInput" placeholder="https://example.com/photo.jpg" class="hidden w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg mb-2 focus:ring-2 focus:ring-blue-500" />
+
+          <!-- Presets -->
+          <div>
+            <span class="text-[11px] text-slate-500 font-medium block mb-1">Or choose a preset photo:</span>
+            <div class="flex flex-wrap gap-1.5" id="presetButtons">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Name -->
+        <div>
+          <label for="eqName" class="block text-xs font-semibold text-slate-700 mb-1">Equipment Name *</label>
+          <input type="text" id="eqName" required placeholder="e.g. Smart Alkaline Water Refiner" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label for="eqCategory" class="block text-xs font-semibold text-slate-700 mb-1">Category</label>
+          <select id="eqCategory" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="Filtration Systems">Filtration Systems</option>
+            <option value="Conditioners & Softeners">Conditioners & Softeners</option>
+            <option value="Whole House Systems">Whole House Systems</option>
+            <option value="Pumps & Dosing">Pumps & Dosing</option>
+            <option value="Replacement Filters">Replacement Filters</option>
+            <option value="Attachments & Fittings">Attachments & Fittings</option>
+            <option value="Supplies & Media">Supplies & Media</option>
+            <option value="Countertop & Portable">Countertop & Portable</option>
+            <option value="Plumbing & Safety">Plumbing & Safety</option>
+            <option value="Accessories & Fixtures">Accessories & Fixtures</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Sizes / Variants -->
+        <div>
+          <label for="eqSizes" class="block text-xs font-semibold text-slate-700 mb-1">Sizes / Options (Optional)</label>
+          <input type="text" id="eqSizes" placeholder="e.g. Small, Medium, Large OR 10&quot;, 20&quot; (comma-separated)" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <span class="text-[11px] text-slate-400 block mt-0.5">Separate multiple options with commas.</span>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label for="eqDescription" class="block text-xs font-semibold text-slate-700 mb-1">Description</label>
+          <textarea id="eqDescription" rows="3" placeholder="Provide product features, filtration specs, or sales details..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" id="cancelAddBtn" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm">Save Equipment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl border border-slate-100">
+      <div class="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-3">
+        <i data-lucide="trash-2" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-lg font-bold text-slate-900 mb-1">Remove Equipment?</h3>
+      <p class="text-xs text-slate-500 mb-5">Are you sure you want to remove <strong id="deleteItemName" class="text-slate-800">this item</strong> from your sales catalog?</p>
+      
+      <div class="flex gap-2">
+        <button id="cancelDeleteBtn" class="flex-1 py-2 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50">Cancel</button>
+        <button id="confirmDeleteBtn" class="flex-1 py-2 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700">Remove Item</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic JavaScript -->
+  <script>
+    // Initial 17 Default Equipment Items
+    const DEFAULT_CATALOG = [
+      {
+        id: "eq-1",
+        name: "Alkaline Water System",
+        category: "Filtration Systems",
+        description: "Advanced multi-stage RO and alkaline remineralization system that produces clean, healthy drinking water with balanced pH.",
+        imageUrl: "https://images.unsplash.com/photo-1548839140-29a749e1cf4e?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-2",
+        name: "Water Softener",
+        category: "Conditioners & Softeners",
+        description: "High-efficiency water softening system engineered to remove hard minerals (calcium & magnesium), preventing scale buildup in plumbing.",
+        sizes: ["Small", "Medium", "Large"],
+        imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-3",
+        name: "Water pH Pump",
+        category: "Pumps & Dosing",
+        description: "Precision automated chemical metering pump designed to adjust and neutralize acidic or alkaline water pH levels.",
+        imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-4",
+        name: "WHCR",
+        category: "Whole House Systems",
+        description: "Heavy-duty Whole House Chlorine Removal tank system providing clean, odor-free water to every tap in the home.",
+        sizes: ["44\"", "48\""],
+        imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-5",
+        name: "Water Pitcher",
+        category: "Countertop & Portable",
+        description: "Ergonomic countertop water filtration pitcher with multi-stage filter cartridge for fast, fresh drinking water.",
+        imageUrl: "https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-6",
+        name: "Water Minis",
+        category: "Countertop & Portable",
+        description: "Compact portable inline water purifier perfect for small spaces, apartments, and RVs.",
+        imageUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-7",
+        name: "Potassium Chloride",
+        category: "Supplies & Media",
+        description: "Premium low-sodium alternative to traditional softener salt pellets for water conditioning systems.",
+        sizes: ["40 lb Bag"],
+        imageUrl: "https://images.unsplash.com/photo-1563170351-be82bc888aa4?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-8",
+        name: "DLA attachment",
+        category: "Attachments & Fittings",
+        description: "Code-compliant Air Gap Drain Line Adapter for water softeners and reverse osmosis discharge lines.",
+        imageUrl: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-9",
+        name: "Drain attachment",
+        category: "Attachments & Fittings",
+        description: "Heavy-duty drain saddle connection clamp for securing wastewater discharge lines.",
+        imageUrl: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-10",
+        name: "Sediment Filter",
+        category: "Replacement Filters",
+        description: "High-capacity spun polypropylene sediment filter cartridge designed to trap rust, sand, and particulate matter.",
+        sizes: ["10\"", "20\""],
+        imageUrl: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-11",
+        name: "Carbon Filter",
+        category: "Replacement Filters",
+        description: "Activated carbon block filter cartridge for effective removal of chlorine, taste, odor, and organic chemicals.",
+        sizes: ["10\"", "20\""],
+        imageUrl: "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-12",
+        name: "Coconut Filter",
+        category: "Replacement Filters",
+        description: "Premium organic coconut shell carbon filter cartridge offering superior taste polishing and chemical absorption.",
+        sizes: ["10\"", "20\""],
+        imageUrl: "https://images.unsplash.com/photo-1544378730-8b5104b18790?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-13",
+        name: "Membrane",
+        category: "Replacement Filters",
+        description: "High-rejection Thin Film Composite (TFC) reverse osmosis membrane element removing up to 99% of contaminants.",
+        sizes: ["50 GPD", "75 GPD", "100 GPD"],
+        imageUrl: "https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-14",
+        name: "Alkaline Filter",
+        category: "Replacement Filters",
+        description: "In-line remineralizing filter cartridge that infuses pure water with beneficial calcium and magnesium minerals.",
+        sizes: ["10\" In-line"],
+        imageUrl: "https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-15",
+        name: "Back flow Preventer",
+        category: "Plumbing & Safety",
+        description: "Dual-check valve backflow preventer ensuring cross-connection protection for clean water supply lines.",
+        sizes: ["3/4\"", "1\""],
+        imageUrl: "https://images.unsplash.com/photo-1542013936693-884638332954?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-16",
+        name: "Shower Head",
+        category: "Accessories & Fixtures",
+        description: "High-pressure filtered shower head designed to neutralize chlorine and minerals for smoother skin and soft hair.",
+        sizes: ["Chrome", "Brushed Nickel", "Matte Black"],
+        imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80",
+      },
+      {
+        id: "eq-17",
+        name: "Spigot",
+        category: "Accessories & Fixtures",
+        description: "Dedicated reverse osmosis drinking water faucet / spigot available in custom designer finishes.",
+        sizes: ["Basic", "Brushed Nickel", "Chrome", "Brass", "Other"],
+        imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80",
+      }
+    ];
+
+    const PRESETS = [
+      { label: "Water System", url: "https://images.unsplash.com/photo-1548839140-29a749e1cf4e?w=600&auto=format&fit=crop&q=80" },
+      { label: "Water Softener", url: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80" },
+      { label: "Filter Cartridge", url: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=600&auto=format&fit=crop&q=80" },
+      { label: "Water Pitcher", url: "https://images.unsplash.com/photo-1527661591475-527312dd65f5?w=600&auto=format&fit=crop&q=80" },
+      { label: "Metering Pump", url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80" },
+    ];
+
+    // State
+    let catalog = JSON.parse(localStorage.getItem('hydro_flow_catalog')) || DEFAULT_CATALOG;
+    let selectedDeleteId = null;
+    let selectedPresetUrl = PRESETS[0].url;
+
+    // Installed Units Mock Data
+    const INSTALLED_UNITS = [
+      { id: "ins-1", customer: "James Garcia", type: "Alkaline Water System", serial: "SN-98214-ALK", installDate: "2024-03-15", status: "Active" },
+      { id: "ins-2", customer: "Mary Martinez", type: "Water Softener (Large)", serial: "SN-44102-SOFT", installDate: "2024-01-20", status: "Active" },
+      { id: "ins-3", customer: "Robert Rodriguez", type: "WHCR (48\")", serial: "SN-11029-WHCR", installDate: "2023-11-10", status: "Needs Service" },
+      { id: "ins-4", customer: "Patricia Hernandez", type: "Water pH Pump", serial: "SN-77301-PHP", installDate: "2024-04-02", status: "Active" },
+    ];
+
+    // Functions
+    function saveCatalog() {
+      localStorage.setItem('hydro_flow_catalog', JSON.stringify(catalog));
+      render();
+    }
+
+    function renderCategoryOptions() {
+      const select = document.getElementById('categoryFilter');
+      const categories = Array.from(new Set(catalog.map(item => item.category))).filter(Boolean);
+      
+      const currentVal = select.value;
+      select.innerHTML = '<option value="all">All Categories</option>';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+      select.value = currentVal;
+    }
+
+    function renderCatalog() {
+      const grid = document.getElementById('catalogGrid');
+      const emptyState = document.getElementById('emptyCatalogState');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const category = document.getElementById('categoryFilter').value;
+
+      const filtered = catalog.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(search) || 
+                              item.description.toLowerCase().includes(search) || 
+                              item.category.toLowerCase().includes(search);
+        const matchesCategory = category === 'all' || item.category === category;
+        return matchesSearch && matchesCategory;
+      });
+
+      document.getElementById('catalogCount').textContent = catalog.length;
+      document.getElementById('statsSubtitle').textContent = `${catalog.length} products offered · ${INSTALLED_UNITS.length} customer units in service`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      grid.innerHTML = filtered.map(item => {
+        const sizeBadges = item.sizes && item.sizes.length > 0 
+          ? item.sizes.map(s => `<span class="inline-block text-[10px] font-semibold px-2 py-0.5 bg-slate-100 text-slate-700 rounded border border-slate-200">${s}</span>`).join(' ')
+          : '<span class="text-[11px] text-slate-400 italic">Standard Single Option</span>';
+
+        return `
+          <div class="bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-xs card-hover flex flex-col justify-between group">
+            <div>
+              <div class="relative h-44 w-full bg-slate-100 overflow-hidden">
+                <img src="${item.imageUrl}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError="this.src='https://images.unsplash.com/photo-1548839140-29a749e1cf4e?w=600&auto=format&fit=crop&q=80'" />
+                <span class="absolute top-2.5 left-2.5 bg-white/90 backdrop-blur-xs text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-xs">
+                  ${item.category}
+                </span>
+                <button onclick="promptDelete('${item.id}', '${item.name.replace(/'/g, "\\'")}')" class="absolute top-2.5 right-2.5 p-1.5 bg-white/90 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-full shadow-xs transition-colors" title="Remove equipment">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+              <div class="p-4">
+                <h3 class="font-bold text-base text-slate-900 tracking-tight leading-snug">${item.name}</h3>
+                <p class="text-xs text-slate-600 mt-1.5 leading-relaxed line-clamp-3">${item.description}</p>
+              </div>
+            </div>
+
+            <div class="p-4 pt-0 border-t border-slate-100 mt-2">
+              <div class="text-[11px] font-medium text-slate-400 mb-1">Available Sizes / Variations:</div>
+              <div class="flex flex-wrap gap-1">${sizeBadges}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function renderInstalledUnits() {
+      const grid = document.getElementById('installedUnitsGrid');
+      grid.innerHTML = INSTALLED_UNITS.map(u => `
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <div class="font-bold text-slate-900 text-sm">${u.type}</div>
+            <div class="text-xs text-slate-500">${u.customer} · <span class="font-mono text-[11px]">SN: ${u.serial}</span></div>
+            <div class="text-[11px] text-slate-400 mt-1">Installed: ${u.installDate}</div>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full font-semibold ${u.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">
+            ${u.status}
+          </span>
+        </div>
+      `).join('');
+    }
+
+    function renderPresets() {
+      const container = document.getElementById('presetButtons');
+      container.innerHTML = PRESETS.map(p => `
+        <button type="button" onclick="selectPreset('${p.url}')" class="text-[11px] px-2.5 py-1 rounded-full border border-slate-200 hover:bg-slate-100 font-medium text-slate-600 transition-colors">
+          ${p.label}
+        </button>
+      `).join('');
+    }
+
+    function selectPreset(url) {
+      selectedPresetUrl = url;
+      document.getElementById('imagePreview').src = url;
+      document.getElementById('imageUrlInput').value = url;
+    }
+
+    function promptDelete(id, name) {
+      selectedDeleteId = id;
+      document.getElementById('deleteItemName').textContent = `"${name}"`;
+      document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function render() {
+      renderCategoryOptions();
+      renderCatalog();
+      renderInstalledUnits();
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      renderPresets();
+      render();
+
+      // Tab Switchers
+      document.getElementById('tabCatalogBtn').addEventListener('click', () => {
+        document.getElementById('tabCatalogView').classList.remove('hidden');
+        document.getElementById('tabInstalledView').classList.add('hidden');
+        document.getElementById('tabCatalogBtn').className = 'border-blue-600 text-blue-600 flex items-center gap-2 py-3 px-1 border-b-2 font-semibold text-sm transition-colors';
+        document.getElementById('tabInstalledBtn').className = 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center gap-2 py-3 px-1 border-b-2 font-medium text-sm transition-colors';
+      });
+
+      document.getElementById('tabInstalledBtn').addEventListener('click', () => {
+        document.getElementById('tabCatalogView').classList.add('hidden');
+        document.getElementById('tabInstalledView').classList.remove('hidden');
+        document.getElementById('tabInstalledBtn').className = 'border-blue-600 text-blue-600 flex items-center gap-2 py-3 px-1 border-b-2 font-semibold text-sm transition-colors';
+        document.getElementById('tabCatalogBtn').className = 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 flex items-center gap-2 py-3 px-1 border-b-2 font-medium text-sm transition-colors';
+      });
+
+      // Filter Inputs
+      document.getElementById('searchInput').addEventListener('input', renderCatalog);
+      document.getElementById('categoryFilter').addEventListener('change', renderCatalog);
+
+      // Add Modal Open / Close
+      const openAddModal = () => document.getElementById('addModal').classList.remove('hidden');
+      const closeAddModal = () => document.getElementById('addModal').classList.add('hidden');
+
+      document.getElementById('openAddModalBtn').addEventListener('click', openAddModal);
+      document.getElementById('emptyAddBtn').addEventListener('click', openAddModal);
+      document.getElementById('closeAddModalBtn').addEventListener('click', closeAddModal);
+      document.getElementById('cancelAddBtn').addEventListener('click', closeAddModal);
+
+      // Delete Modal Close / Confirm
+      const closeDeleteModal = () => document.getElementById('deleteModal').classList.add('hidden');
+      document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+      
+      document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (selectedDeleteId) {
+          catalog = catalog.filter(item => item.id !== selectedDeleteId);
+          saveCatalog();
+          selectedDeleteId = null;
+        }
+        closeDeleteModal();
+      });
+
+      // Custom Image URL Toggle
+      document.getElementById('toggleUrlInputBtn').addEventListener('click', () => {
+        const input = document.getElementById('imageUrlInput');
+        input.classList.toggle('hidden');
+        if (!input.classList.contains('hidden')) input.focus();
+      });
+
+      document.getElementById('imageUrlInput').addEventListener('input', (e) => {
+        const url = e.target.value.trim();
+        if (url) {
+          selectedPresetUrl = url;
+          document.getElementById('imagePreview').src = url;
+        }
+      });
+
+      // File Upload
+      document.getElementById('fileInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            selectedPresetUrl = reader.result;
+            document.getElementById('imagePreview').src = reader.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // Add Form Submission
+      document.getElementById('addEquipmentForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('eqName').value.trim();
+        const category = document.getElementById('eqCategory').value;
+        const description = document.getElementById('eqDescription').value.trim() || 'No detailed description provided.';
+        const rawSizes = document.getElementById('eqSizes').value.trim();
+
+        const sizes = rawSizes ? rawSizes.split(',').map(s => s.trim()).filter(Boolean) : null;
+
+        const newItem = {
+          id: 'eq-' + Date.now(),
+          name,
+          category,
+          description,
+          sizes: sizes && sizes.length > 0 ? sizes : undefined,
+          imageUrl: selectedPresetUrl,
+        };
+
+        catalog.unshift(newItem);
+        saveCatalog();
+
+        // Reset
+        document.getElementById('addEquipmentForm').reset();
+        selectedPresetUrl = PRESETS[0].url;
+        document.getElementById('imagePreview').src = PRESETS[0].url;
+        document.getElementById('imageUrlInput').classList.add('hidden');
+        closeAddModal();
+      });
+
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
