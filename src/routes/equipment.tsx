@@ -45,7 +45,7 @@ function EquipmentPage() {
         eyebrow="Inventory & Catalog"
         title="Equipment Management"
         description={`${catalog.length} products offered · ${s.equipment.length} customer units in service`}
-        action={
+        actions={
           <Button
             onClick={() => {
               setActiveTab("catalog");
