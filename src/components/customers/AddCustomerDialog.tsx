@@ -163,7 +163,7 @@ export function AddCustomerDialog({ open, onOpenChange }: { open: boolean; onOpe
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        showCloseButton
+
         className="max-w-3xl p-0 gap-0 overflow-hidden rounded-2xl sm:max-w-3xl"
       >
         <form onSubmit={submit} className="flex max-h-[90vh] flex-col">
