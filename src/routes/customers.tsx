@@ -7,12 +7,14 @@ import { initials, shortDate } from "@/lib/format";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { HistoricalBadge } from "@/components/import/HistoricalBadge";
+import { AddCustomerDialog } from "@/components/customers/AddCustomerDialog";
 
 export const Route = createFileRoute("/customers")({ component: Customers });
 
 function Customers() {
   const customers = useCRM((s) => s.customers);
   const [q, setQ] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
   const filtered = customers.filter((c) => `${c.firstName} ${c.lastName} ${c.email} ${c.phone} ${c.propertyAddress}`.toLowerCase().includes(q.toLowerCase()));
 
   return (
@@ -22,11 +24,18 @@ function Customers() {
         title="Customers"
         description={`${customers.length} customers`}
         actions={
-          <Link to="/import-customers"><Button className="bg-primary">+ Add customer</Button></Link>
+          <>
+            <Link to="/import-customers">
+              <Button variant="outline">Import CSV</Button>
+            </Link>
+            <Button className="bg-primary" onClick={() => setAddOpen(true)}>+ Add customer</Button>
+          </>
         }
       />
+      <AddCustomerDialog open={addOpen} onOpenChange={setAddOpen} />
       <Section className="space-y-4">
         <Input placeholder="Search by name, email, phone, address..." value={q} onChange={(e) => setQ(e.target.value)} className="max-w-md" />
+
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((c) => (
             <Card key={c.id} className="shadow-sm hover:shadow-card transition-shadow">
