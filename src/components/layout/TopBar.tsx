@@ -34,15 +34,52 @@ export function TopBar() {
   const markAll = useCRM((s) => s.markAllNotifsRead);
   const unread = notifs.filter((n) => !n.read).length;
   const path = useRouterState({ select: (r) => r.location.pathname });
+  const [menuOpen, setMenuOpen] = useState(false);
   const hideOnTech = path.startsWith("/technician");
   if (hideOnTech) return null;
 
   return (
     <header className="sticky top-0 z-20 h-14 lg:h-16 bg-background/85 backdrop-blur border-b border-border flex items-center gap-3 px-4 lg:px-6">
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="lg:hidden -ml-2" aria-label="Open menu">
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-72 p-0 bg-sidebar text-sidebar-foreground">
+          <div className="px-5 py-4 font-semibold tracking-tight">My Water People CRM</div>
+          <nav className="px-2 pb-6 overflow-y-auto h-[calc(100vh-4rem)]">
+            {NAV.filter((i) => canSee(i, role)).map((item) => {
+              const Icon =
+                (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[item.icon] ||
+                Icons.Circle;
+              const active = path === item.to;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMenuOpen(false)}
+                  className={
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm " +
+                    (active
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60")
+                  }
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </SheetContent>
+      </Sheet>
+
       <div className="relative flex-1 max-w-md">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search customers, jobs, invoices..." className="pl-8 h-9 bg-muted/50 border-transparent focus-visible:bg-background" />
       </div>
+
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
