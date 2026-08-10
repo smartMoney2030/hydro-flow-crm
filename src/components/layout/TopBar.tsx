@@ -1,5 +1,9 @@
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Menu } from "lucide-react";
+import { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { NAV, canSee } from "@/lib/nav";
+import * as Icons from "lucide-react";
 import { useCRM, useCurrentUser } from "@/store/crm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
