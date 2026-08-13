@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PageHeader, Section } from "@/components/common/PageHeader";
 import { useCRM } from "@/store/crm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,9 +54,16 @@ export const Route = createFileRoute("/supply-orders")({ component: SupplyOrders
 function SupplyOrdersPage() {
   const s = useCRM();
   const inventory = s.inventory;
+  const syncCatalogToInventory = s.syncCatalogToInventory;
+
+  useEffect(() => {
+    const n = syncCatalogToInventory();
+    if (n > 0) toast.success(`Added ${n} equipment item${n === 1 ? "" : "s"} to inventory`);
+  }, [syncCatalogToInventory]);
 
   const lowStock = inventory.filter((i) => i.onHand <= i.reorderLevel).length;
   const totalUnits = inventory.reduce((a, i) => a + i.onHand, 0);
+
 
   const chartData = useMemo(
     () =>

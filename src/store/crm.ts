@@ -72,6 +72,8 @@ interface CRMState {
   updateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
   removeInventoryItem: (id: string) => void;
   adjustInventory: (id: string, delta: number, reason?: string) => void;
+  syncCatalogToInventory: () => number;
+
   createSupplyOrder: (input: {
     vendor: string;
     jobId?: string;
@@ -196,6 +198,32 @@ export const useCRM = create<CRMState>((set, get) => ({
     }));
     get().addAudit({ actorId: get().currentUserId, action: "adjusted", entity: "Inventory", entityId: id, detail: `${delta > 0 ? "+" : ""}${delta}${reason ? ` (${reason})` : ""}` });
   },
+  syncCatalogToInventory: () => {
+    const { equipmentCatalog, inventory } = get();
+    const existing = new Set(inventory.map((i) => i.name.trim().toLowerCase()));
+    const missing = equipmentCatalog.filter((c) => c.active !== false && !existing.has(c.name.trim().toLowerCase()));
+    if (missing.length === 0) return 0;
+    const now = new Date().toISOString();
+    const created: InventoryItem[] = missing.map((c) => ({
+      id: uid("inv"),
+      updatedAt: now,
+      sku: (c.name.replace(/[^A-Za-z0-9]/g, "").slice(0, 3).toUpperCase() || "EQP") + "-" + Math.floor(Math.random() * 900 + 100),
+      name: c.name,
+      category: c.category || "System",
+      unit: "ea",
+      onHand: 0,
+      reorderLevel: 1,
+      reorderQty: 2,
+      vendor: "",
+      unitCost: 0,
+      location: "",
+      notes: "Auto-added from equipment catalog",
+    }));
+    set((s) => ({ inventory: [...created, ...s.inventory] }));
+    get().addAudit({ actorId: get().currentUserId, action: "created", entity: "Inventory", entityId: created[0]!.id, detail: `${created.length} equipment item(s) added to inventory` });
+    return created.length;
+  },
+
   createSupplyOrder: (input) => {
     const order: SupplyOrder = {
       id: uid("so"),
@@ -476,6 +504,7 @@ export const useCRM = create<CRMState>((set, get) => ({
     };
     set((s) => ({ equipmentCatalog: [newItem, ...s.equipmentCatalog] }));
     get().addAudit({ actorId: get().currentUserId, action: "created", entity: "EquipmentCatalog", entityId: newItem.id, detail: newItem.name });
+    get().syncCatalogToInventory();
     return newItem;
   },
   updateCatalogItem: (id, patch) => {
