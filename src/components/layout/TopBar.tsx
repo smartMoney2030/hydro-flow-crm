@@ -57,10 +57,12 @@ export function TopBar() {
     <header className="sticky top-0 z-20 h-14 lg:h-16 bg-background/85 backdrop-blur border-b border-border flex items-center gap-3 px-4 lg:px-6">
       <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="lg:hidden -ml-2" aria-label="Open menu">
-            <Menu className="h-5 w-5" />
+          <Button variant="outline" size="sm" className="lg:hidden -ml-1 gap-1.5 shrink-0" aria-label="Open menu">
+            <Menu className="h-4 w-4" />
+            <span className="text-xs font-medium">Menu</span>
           </Button>
         </SheetTrigger>
+
         <SheetContent side="left" className="w-72 p-0 bg-sidebar text-sidebar-foreground">
           <div className="px-5 py-4 font-semibold tracking-tight">My Water People CRM</div>
           <nav className="px-2 pb-6 overflow-y-auto h-[calc(100vh-4rem)]">
