@@ -275,6 +275,7 @@ function StatCard({ icon, label, value, tone }: { icon: React.ReactNode; label: 
 
 function AddInventoryDialog() {
   const addInventoryItem = useCRM((s) => s.addInventoryItem);
+  const catalog = useCRM((s) => s.equipmentCatalog);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     sku: "",
@@ -289,6 +290,7 @@ function AddInventoryDialog() {
     location: "",
     notes: "",
   });
+
 
   const submit = () => {
     if (!form.name.trim()) {
