@@ -14,7 +14,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Trash2, Tag, Layers, Droplet } from "lucide-react";
+import { AddEquipmentDialog } from "@/components/equipment/AddEquipmentDialog";
+import { Trash2, Tag, Layers, Droplet, Pencil } from "lucide-react";
 
 interface EquipmentCatalogCardProps {
   item: EquipmentCatalogItem;
