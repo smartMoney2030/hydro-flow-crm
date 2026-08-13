@@ -114,6 +114,9 @@ export function EquipmentCatalogCard({ item }: EquipmentCatalogCardProps) {
         </CardContent>
       </Card>
 
+      {/* Edit dialog */}
+      <AddEquipmentDialog open={showEdit} onOpenChange={setShowEdit} item={item} />
+
       {/* Delete Confirmation Alert */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
