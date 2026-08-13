@@ -275,6 +275,7 @@ function StatCard({ icon, label, value, tone }: { icon: React.ReactNode; label: 
 
 function AddInventoryDialog() {
   const addInventoryItem = useCRM((s) => s.addInventoryItem);
+  const catalog = useCRM((s) => s.equipmentCatalog);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     sku: "",
@@ -289,6 +290,7 @@ function AddInventoryDialog() {
     location: "",
     notes: "",
   });
+
 
   const submit = () => {
     if (!form.name.trim()) {
@@ -323,8 +325,36 @@ function AddInventoryDialog() {
         </DialogHeader>
         <div className="grid gap-3 md:grid-cols-2">
           <Field label="Item name *">
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Sediment Filter 10in" />
+            <div className="flex gap-1.5">
+              <Input
+                className="min-w-0 flex-1"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Sediment Filter 10in"
+              />
+              <Select
+                value=""
+                onValueChange={(v) => {
+                  const it = catalog.find((c) => c.id === v);
+                  if (it) setForm((f) => ({ ...f, name: it.name, category: it.category || f.category }));
+                }}
+              >
+                <SelectTrigger className="w-[42px] shrink-0 px-2 [&>svg]:opacity-100" aria-label="Pick from equipment list">
+                  <span className="sr-only">Pick from equipment</span>
+                </SelectTrigger>
+                <SelectContent>
+                  {catalog.length === 0 ? (
+                    <div className="px-2 py-1.5 text-xs text-muted-foreground">No equipment items yet</div>
+                  ) : (
+                    catalog.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
           </Field>
+
           <Field label="SKU">
             <Input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} placeholder="auto" />
           </Field>
