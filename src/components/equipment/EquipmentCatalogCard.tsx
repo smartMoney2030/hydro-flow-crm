@@ -57,13 +57,22 @@ export function EquipmentCatalogCard({ item }: EquipmentCatalogCardProps) {
             </Badge>
           </div>
 
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded-full shadow-xs transition-colors backdrop-blur-xs"
-            title="Remove item from catalog"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="absolute top-2 right-2 flex items-center gap-1">
+            <button
+              onClick={() => setShowEdit(true)}
+              className="p-1.5 bg-white/90 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-full shadow-xs transition-colors backdrop-blur-xs"
+              title="Edit item"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="p-1.5 bg-white/90 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded-full shadow-xs transition-colors backdrop-blur-xs"
+              title="Remove item from catalog"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
