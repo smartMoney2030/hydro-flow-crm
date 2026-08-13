@@ -272,7 +272,7 @@ export function AddEquipmentDialog({ open, onOpenChange, item }: AddEquipmentDia
               Cancel
             </Button>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
-              Save Equipment
+              {isEditing ? "Save Changes" : "Save Equipment"}
             </Button>
           </RadixDialogFooter>
         </form>
