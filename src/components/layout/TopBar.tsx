@@ -1,5 +1,6 @@
 import { Bell, Search, Menu } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NAV, canSee } from "@/lib/nav";
@@ -35,6 +36,20 @@ export function TopBar() {
   const unread = notifs.filter((n) => !n.read).length;
   const path = useRouterState({ select: (r) => r.location.pathname });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [authEmail, setAuthEmail] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (active) setAuthEmail(data.session?.user.email ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthEmail(session?.user.email ?? null);
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
   const hideOnTech = path.startsWith("/technician");
   if (hideOnTech) return null;
 
