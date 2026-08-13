@@ -45,8 +45,9 @@ const PRESET_IMAGES = [
   { label: "Metering Pump", url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80" },
 ];
 
-export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogProps) {
-  const { addCatalogItem } = useCRM();
+export function AddEquipmentDialog({ open, onOpenChange, item }: AddEquipmentDialogProps) {
+  const { addCatalogItem, updateCatalogItem } = useCRM();
+  const isEditing = Boolean(item);
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Filtration Systems");
@@ -55,6 +56,29 @@ export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogPro
   const [imageUrl, setImageUrl] = useState(PRESET_IMAGES[0].url);
   const [imagePreview, setImagePreview] = useState<string | null>(PRESET_IMAGES[0].url);
   const [isCustomUrl, setIsCustomUrl] = useState(false);
+
+  // Hydrate the form whenever the dialog opens (edit = item values, add = defaults)
+  useEffect(() => {
+    if (!open) return;
+    if (item) {
+      setName(item.name);
+      setCategory(item.category || "Filtration Systems");
+      setDescription(item.description === "No detailed description provided." ? "" : item.description);
+      setSizesInput((item.sizes || []).join(", "));
+      setImageUrl(item.imageUrl || "");
+      setImagePreview(item.imageUrl || null);
+      setIsCustomUrl(false);
+    } else {
+      setName("");
+      setCategory("Filtration Systems");
+      setDescription("");
+      setSizesInput("");
+      setImageUrl(PRESET_IMAGES[0].url);
+      setImagePreview(PRESET_IMAGES[0].url);
+      setIsCustomUrl(false);
+    }
+  }, [open, item]);
+
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
