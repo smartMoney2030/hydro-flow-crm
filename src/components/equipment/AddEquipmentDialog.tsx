@@ -124,10 +124,12 @@ export function AddEquipmentDialog({ open, onOpenChange, item }: AddEquipmentDia
       <RadixDialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <RadixDialogHeader>
           <RadixDialogTitle className="flex items-center gap-2 text-xl font-bold">
-            <Sparkles className="w-5 h-5 text-blue-600" /> Add New Equipment
+            <Sparkles className="w-5 h-5 text-blue-600" /> {isEditing ? "Edit Equipment" : "Add New Equipment"}
           </RadixDialogTitle>
           <RadixDialogDescription>
-            Add a new product or equipment unit to your sales catalog with photos, descriptions, and size variations.
+            {isEditing
+              ? "Update this catalog item's photo, category, description, and size variations."
+              : "Add a new product or equipment unit to your sales catalog with photos, descriptions, and size variations."}
           </RadixDialogDescription>
         </RadixDialogHeader>
 
