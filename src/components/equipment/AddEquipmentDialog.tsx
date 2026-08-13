@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCRM } from "@/store/crm";
+import type { EquipmentCatalogItem } from "@/data/types";
 import {
   Dialog as RadixDialog,
   DialogContent as RadixDialogContent,
@@ -18,6 +19,8 @@ import { ImagePlus, Upload, Sparkles, X } from "lucide-react";
 interface AddEquipmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** When provided, the dialog edits this catalog item instead of creating a new one. */
+  item?: EquipmentCatalogItem | null;
 }
 
 const CATEGORIES = [
@@ -42,8 +45,9 @@ const PRESET_IMAGES = [
   { label: "Metering Pump", url: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80" },
 ];
 
-export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogProps) {
-  const { addCatalogItem } = useCRM();
+export function AddEquipmentDialog({ open, onOpenChange, item }: AddEquipmentDialogProps) {
+  const { addCatalogItem, updateCatalogItem } = useCRM();
+  const isEditing = Boolean(item);
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Filtration Systems");
@@ -52,6 +56,29 @@ export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogPro
   const [imageUrl, setImageUrl] = useState(PRESET_IMAGES[0].url);
   const [imagePreview, setImagePreview] = useState<string | null>(PRESET_IMAGES[0].url);
   const [isCustomUrl, setIsCustomUrl] = useState(false);
+
+  // Hydrate the form whenever the dialog opens (edit = item values, add = defaults)
+  useEffect(() => {
+    if (!open) return;
+    if (item) {
+      setName(item.name);
+      setCategory(item.category || "Filtration Systems");
+      setDescription(item.description === "No detailed description provided." ? "" : item.description);
+      setSizesInput((item.sizes || []).join(", "));
+      setImageUrl(item.imageUrl || "");
+      setImagePreview(item.imageUrl || null);
+      setIsCustomUrl(false);
+    } else {
+      setName("");
+      setCategory("Filtration Systems");
+      setDescription("");
+      setSizesInput("");
+      setImageUrl(PRESET_IMAGES[0].url);
+      setImagePreview(PRESET_IMAGES[0].url);
+      setIsCustomUrl(false);
+    }
+  }, [open, item]);
+
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -75,22 +102,20 @@ export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogPro
       .map((s) => s.trim())
       .filter(Boolean);
 
-    addCatalogItem({
+    const payload = {
       name: name.trim(),
       category,
       description: description.trim() || "No detailed description provided.",
       sizes: sizes.length > 0 ? sizes : undefined,
       imageUrl: imagePreview || undefined,
-    });
+    };
 
-    // Reset form
-    setName("");
-    setCategory("Filtration Systems");
-    setDescription("");
-    setSizesInput("");
-    setImageUrl(PRESET_IMAGES[0].url);
-    setImagePreview(PRESET_IMAGES[0].url);
-    setIsCustomUrl(false);
+    if (item) {
+      updateCatalogItem(item.id, payload);
+    } else {
+      addCatalogItem(payload);
+    }
+
     onOpenChange(false);
   };
 
@@ -99,10 +124,12 @@ export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogPro
       <RadixDialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <RadixDialogHeader>
           <RadixDialogTitle className="flex items-center gap-2 text-xl font-bold">
-            <Sparkles className="w-5 h-5 text-blue-600" /> Add New Equipment
+            <Sparkles className="w-5 h-5 text-blue-600" /> {isEditing ? "Edit Equipment" : "Add New Equipment"}
           </RadixDialogTitle>
           <RadixDialogDescription>
-            Add a new product or equipment unit to your sales catalog with photos, descriptions, and size variations.
+            {isEditing
+              ? "Update this catalog item's photo, category, description, and size variations."
+              : "Add a new product or equipment unit to your sales catalog with photos, descriptions, and size variations."}
           </RadixDialogDescription>
         </RadixDialogHeader>
 
@@ -245,7 +272,7 @@ export function AddEquipmentDialog({ open, onOpenChange }: AddEquipmentDialogPro
               Cancel
             </Button>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium">
-              Save Equipment
+              {isEditing ? "Save Changes" : "Save Equipment"}
             </Button>
           </RadixDialogFooter>
         </form>

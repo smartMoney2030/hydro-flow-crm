@@ -14,7 +14,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Trash2, Tag, Layers, Droplet } from "lucide-react";
+import { AddEquipmentDialog } from "@/components/equipment/AddEquipmentDialog";
+import { Trash2, Tag, Layers, Droplet, Pencil } from "lucide-react";
 
 interface EquipmentCatalogCardProps {
   item: EquipmentCatalogItem;
@@ -23,6 +24,7 @@ interface EquipmentCatalogCardProps {
 export function EquipmentCatalogCard({ item }: EquipmentCatalogCardProps) {
   const { removeCatalogItem } = useCRM();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [imgError, setImgError] = useState(false);
 
   const handleDelete = () => {
@@ -55,13 +57,22 @@ export function EquipmentCatalogCard({ item }: EquipmentCatalogCardProps) {
             </Badge>
           </div>
 
-          <button
-            onClick={() => setShowDeleteConfirm(true)}
-            className="absolute top-2 right-2 p-1.5 bg-white/90 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded-full shadow-xs transition-colors backdrop-blur-xs"
-            title="Remove item from catalog"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <div className="absolute top-2 right-2 flex items-center gap-1">
+            <button
+              onClick={() => setShowEdit(true)}
+              className="p-1.5 bg-white/90 hover:bg-blue-50 text-slate-500 hover:text-blue-600 rounded-full shadow-xs transition-colors backdrop-blur-xs"
+              title="Edit item"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="p-1.5 bg-white/90 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded-full shadow-xs transition-colors backdrop-blur-xs"
+              title="Remove item from catalog"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -102,6 +113,9 @@ export function EquipmentCatalogCard({ item }: EquipmentCatalogCardProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit dialog */}
+      <AddEquipmentDialog open={showEdit} onOpenChange={setShowEdit} item={item} />
 
       {/* Delete Confirmation Alert */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
