@@ -540,6 +540,18 @@ export const useCRM = create<CRMState>()(persist((set, get) => ({
     set((s) => ({
       automationRuns: [{ id: `arn-${Date.now()}`, at: new Date().toISOString(), ...r }, ...s.automationRuns].slice(0, 100),
     })),
+}), {
+  name: "mwp-crm",
+  version: 1,
+  storage: createJSONStorage(() =>
+    typeof window === "undefined"
+      ? { getItem: () => null, setItem: () => {}, removeItem: () => {} }
+      : window.localStorage,
+  ),
+  partialize: (state) =>
+    Object.fromEntries(
+      Object.entries(state).filter(([k]) => (PERSISTED_KEYS as readonly string[]).includes(k)),
+    ) as Partial<CRMState>,
 }));
 
 export const useCurrentUser = () => {
