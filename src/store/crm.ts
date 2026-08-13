@@ -72,6 +72,8 @@ interface CRMState {
   updateInventoryItem: (id: string, patch: Partial<InventoryItem>) => void;
   removeInventoryItem: (id: string) => void;
   adjustInventory: (id: string, delta: number, reason?: string) => void;
+  syncCatalogToInventory: () => number;
+
   createSupplyOrder: (input: {
     vendor: string;
     jobId?: string;
