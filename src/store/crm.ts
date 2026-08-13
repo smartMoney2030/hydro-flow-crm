@@ -504,6 +504,7 @@ export const useCRM = create<CRMState>((set, get) => ({
     };
     set((s) => ({ equipmentCatalog: [newItem, ...s.equipmentCatalog] }));
     get().addAudit({ actorId: get().currentUserId, action: "created", entity: "EquipmentCatalog", entityId: newItem.id, detail: newItem.name });
+    get().syncCatalogToInventory();
     return newItem;
   },
   updateCatalogItem: (id, patch) => {
