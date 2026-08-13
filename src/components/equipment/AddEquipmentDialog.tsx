@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCRM } from "@/store/crm";
+import type { EquipmentCatalogItem } from "@/data/types";
 import {
   Dialog as RadixDialog,
   DialogContent as RadixDialogContent,
