@@ -102,22 +102,20 @@ export function AddEquipmentDialog({ open, onOpenChange, item }: AddEquipmentDia
       .map((s) => s.trim())
       .filter(Boolean);
 
-    addCatalogItem({
+    const payload = {
       name: name.trim(),
       category,
       description: description.trim() || "No detailed description provided.",
       sizes: sizes.length > 0 ? sizes : undefined,
       imageUrl: imagePreview || undefined,
-    });
+    };
 
-    // Reset form
-    setName("");
-    setCategory("Filtration Systems");
-    setDescription("");
-    setSizesInput("");
-    setImageUrl(PRESET_IMAGES[0].url);
-    setImagePreview(PRESET_IMAGES[0].url);
-    setIsCustomUrl(false);
+    if (item) {
+      updateCatalogItem(item.id, payload);
+    } else {
+      addCatalogItem(payload);
+    }
+
     onOpenChange(false);
   };
 
