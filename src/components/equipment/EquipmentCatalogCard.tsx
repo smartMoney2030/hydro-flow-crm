@@ -24,6 +24,7 @@ interface EquipmentCatalogCardProps {
 export function EquipmentCatalogCard({ item }: EquipmentCatalogCardProps) {
   const { removeCatalogItem } = useCRM();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [imgError, setImgError] = useState(false);
 
   const handleDelete = () => {
