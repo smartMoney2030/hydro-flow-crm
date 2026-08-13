@@ -156,7 +156,27 @@ const userForRole = (role: Role, users: User[]) =>
 
 const uid = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-export const useCRM = create<CRMState>((set, get) => ({
+const PERSISTED_KEYS = [
+  "customers",
+  "leads",
+  "jobs",
+  "supplyOrders",
+  "installations",
+  "equipment",
+  "equipmentCatalog",
+  "maintenance",
+  "tasks",
+  "events",
+  "notifications",
+  "audit",
+  "automationRules",
+  "automationRuns",
+  "importBatches",
+  "inventory",
+  "users",
+] as const;
+
+export const useCRM = create<CRMState>()(persist((set, get) => ({
   currentUserId: "u1",
   role: "admin",
   users: seedUsers,
