@@ -19,6 +19,8 @@ import { ImagePlus, Upload, Sparkles, X } from "lucide-react";
 interface AddEquipmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** When provided, the dialog edits this catalog item instead of creating a new one. */
+  item?: EquipmentCatalogItem | null;
 }
 
 const CATEGORIES = [
