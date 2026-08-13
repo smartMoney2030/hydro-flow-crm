@@ -1,5 +1,6 @@
 import { Bell, Search, Menu } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NAV, canSee } from "@/lib/nav";
@@ -35,6 +36,20 @@ export function TopBar() {
   const unread = notifs.filter((n) => !n.read).length;
   const path = useRouterState({ select: (r) => r.location.pathname });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [authEmail, setAuthEmail] = useState<string | null>(null);
+  useEffect(() => {
+    let active = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (active) setAuthEmail(data.session?.user.email ?? null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setAuthEmail(session?.user.email ?? null);
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
   const hideOnTech = path.startsWith("/technician");
   if (hideOnTech) return null;
 
@@ -139,9 +154,40 @@ export function TopBar() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <div className="h-9 w-9 rounded-full grid place-items-center text-xs font-semibold text-white" style={{ backgroundColor: me.avatarColor }}>
-        {initials(me.name)}
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="h-9 w-9 rounded-full grid place-items-center text-xs font-semibold text-white"
+            style={{ backgroundColor: me.avatarColor }}
+            aria-label="Account"
+          >
+            {initials(me.name)}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuLabel className="font-normal">
+            <div className="font-medium">{me.name}</div>
+            <div className="text-xs text-muted-foreground truncate">
+              {authEmail ?? "Not signed in to cloud"}
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          {authEmail ? (
+            <DropdownMenuItem
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = "/auth";
+              }}
+            >
+              Sign out
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem asChild>
+              <Link to="/auth">Sign in to sync data</Link>
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </header>
   );
 }

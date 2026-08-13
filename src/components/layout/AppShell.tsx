@@ -3,9 +3,11 @@ import type { ReactNode } from "react";
 import { Sidebar } from "./Sidebar";
 import { MobileNav } from "./MobileNav";
 import { TopBar } from "./TopBar";
+import { useCloudSync } from "@/hooks/use-cloud-sync";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (r) => r.location.pathname });
+  useCloudSync();
   // Technician mobile + auth get bare layouts
   if (path.startsWith("/technician") || path.startsWith("/auth")) {
     return <>{children}</>;
