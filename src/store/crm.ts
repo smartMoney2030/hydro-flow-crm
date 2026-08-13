@@ -220,7 +220,7 @@ export const useCRM = create<CRMState>((set, get) => ({
       notes: "Auto-added from equipment catalog",
     }));
     set((s) => ({ inventory: [...created, ...s.inventory] }));
-    get().addAudit({ actorId: get().currentUserId, action: "created", entity: "Inventory", detail: `${created.length} equipment item(s) added to inventory` });
+    get().addAudit({ actorId: get().currentUserId, action: "created", entity: "Inventory", entityId: created[0]!.id, detail: `${created.length} equipment item(s) added to inventory` });
     return created.length;
   },
 
